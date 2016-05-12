@@ -211,7 +211,7 @@ else
 
             %location_disp is what is displayed on the coords_list box
             location_disp = handles.locations;
-            set(handles.coords_list,'string',location_disp);
+            set(handles.coords_table,'Data',location_disp);
 
         %catch exception if error occurs
         catch serialException
