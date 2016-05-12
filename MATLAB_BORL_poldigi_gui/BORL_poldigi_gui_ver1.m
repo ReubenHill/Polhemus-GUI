@@ -207,7 +207,7 @@ else
 
             %-----------------Display initial point to find on GUI-------------
 
-            set(handles.infobox,'string',handles.locations(1,:));
+            set(handles.infobox,'string',handles.locations(1,1));
 
             %location_disp is what is displayed on the coords_list box
             location_disp = handles.locations;
