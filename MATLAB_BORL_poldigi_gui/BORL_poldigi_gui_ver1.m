@@ -443,39 +443,36 @@ if(~handles.all_points_found)
         % 5 Azimuth of stylus in degrees
         % 6 Elevation of stylus in degrees
         % 7 Roll of stylus degrees
-        
+       
+        % extract coords
         Coords = data_num(1,2:4);
-        
-        %get the current string display on the location display box
-        location_disp = get(handles.coords_list,'string');
 
-        %update 5 landmark points if they are being measured (they are the
-        %first 5 points)
+        % update 5 landmark points if they are being measured (they are the
+        % first 5 points)
         if(handles.point_count <= 5)
             handles.landmarks(handles.point_count,:) = Coords;
             set(handles.HeadAlign,'Enable','off');
-        else %otherwise do coord transform on measured points
+        else % otherwise do coord transform on measured points
             Coords = Coords + handles.TransformVector;
             Coords = Coords*handles.TransformMatrix';
         end
 
-        %enable head allign after 5 points...
+        % enable head allign after 5 points...
         if(handles.point_count == 5)
             set(handles.HeadAlign,'Enable','on');
         end
 
-        %convert to cell array of strings
-        location_disp = cellstr(location_disp);
-
-        %append coordinates to location string
-        location_disp{handles.point_count,1} = sprintf( '%s \t %6.3f \t %6.3f \t %6.3f ', ...
-                                    location_disp{handles.point_count,1}, ... 
-                                    Coords(1),Coords(2),Coords(3));
+        % Update table
         
-        %convert from cell array back to char array
-        location_disp = char(location_disp);
+        % Initially get the current data from the table
+        temp_coords_table = get(handles.coords_table, 'Data');
+        
+        % Add coordintates to temporary table
+        temp_coords_table(handles.point_count,2:4) = ...
+            num2cell(handles.landmarks(handles.point_count,1:3));     
 
-        set(handles.coords_list,'string',location_disp);
+        % update with the new coordinate values
+        set(handles.coords_table,'Data',temp_coords_table);
 
         %update point to look for (unless at end of list)
         if( handles.point_count < size(location_disp,1) )
