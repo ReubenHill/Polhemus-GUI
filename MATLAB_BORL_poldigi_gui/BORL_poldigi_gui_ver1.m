@@ -209,7 +209,7 @@ else
 
             set(handles.infobox,'string',handles.locations(1,1));
 
-            %location_disp is what is displayed on the coords_list box
+            %location_disp is what is displayed on coords_table
             location_disp = handles.locations;
             set(handles.coords_table,'Data',location_disp);
 
