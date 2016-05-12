@@ -474,8 +474,9 @@ if(~handles.all_points_found)
         % update with the new coordinate values
         set(handles.coords_table,'Data',temp_coords_table);
 
-        %update point to look for (unless at end of list)
-        if( handles.point_count < size(location_disp,1) )
+        % update point to look for (unless at end of list as given by the
+        % length of temp_coords_table - ie the number of headpoints)
+        if( handles.point_count < size(temp_coords_table,1) )
             set(handles.infobox,'string',handles.locations(handles.point_count+1,:));
         else
             set(handles.infobox,'string','All points Collected!');
