@@ -237,36 +237,6 @@ end
 
 
 
-
-
-
-% --- Executes on selection change in coords_list.
-function coords_list_Callback(hObject, eventdata, handles)
-% hObject    handle to coords_list (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns coords_list contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from coords_list
-
-
-
-
-% --- Executes during object creation, after setting all properties.
-function coords_list_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to coords_list (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: listbox controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-
-
 % --- Executes on button press in HeadAlign.
 function HeadAlign_Callback(hObject, eventdata, handles)
 % hObject    handle to HeadAlign (see GCBO)
