@@ -176,8 +176,8 @@ else
         handles.locations = textscan(FileID,'%s','delimiter','\n');
 
         % append to list of reference points and convert to string array
-        handles.locations = char(char('Nasion','Inion','Ar','Al','Cz'), ... 
-                                                char(handles.locations{1,1}));
+        handles.locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
+                                                handles.locations{1,1}];
         fclose(FileID);
 
         %error test the first serial port functions...
