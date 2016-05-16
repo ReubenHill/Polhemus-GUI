@@ -451,7 +451,7 @@ if(~handles.all_points_found)
 
         % Update table with newly measured x y and z values
         handles.coords_table.Data(handles.point_count,2:4) = ...
-            num2cell(handles.landmarks(handles.point_count,1:3));
+            num2cell(Coords);
         
         % update point to look for (unless at end of list as given by the
         % length of handles.coords_table.Data - ie the number of headpoints)
