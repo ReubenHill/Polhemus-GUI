@@ -244,8 +244,16 @@ function HeadAlign_Callback(hObject, eventdata, handles)
 
 if(handles.point_count >= 5)
     
+    % extract the locations
+    locations = handles.coords_table.Data;
+    
+    % extract the landmark locations (the first five data points)...
+    landmarks = locations(1:5,2:4);
+    % ... and convert to ordinary array from cell array
+    landmarks = cell2mat(landmarks);
+    
     %get transformation matrix to new coord system
-    [TransformMatrix,TransformVector] = GetCoordTransform(handles.landmarks);
+    [TransformMatrix,TransformVector] = GetCoordTransform(landmarks);
     %save tranformation
     handles.TransformMatrix = TransformMatrix;
     handles.TransformVector = TransformVector;
@@ -256,26 +264,27 @@ if(handles.point_count >= 5)
     
     hold on
     
-    for k = 1:size(handles.landmarks,1)
+    for k = 1:size(landmarks,1)
         %transform cardinal points
-        handles.landmarks(k,:) = handles.landmarks(k,:) + TransformVector;
-        handles.landmarks(k,:) = handles.landmarks(k,:)*TransformMatrix';
+        landmarks(k,:) = landmarks(k,:) + TransformVector;
+        landmarks(k,:) = landmarks(k,:)*TransformMatrix';
 
         %remove old point from graph
         delete(handles.pointhandle(k));
         
         %replot point
-        handles.pointhandle(k) = plot3(handles.landmarks(k,1), ...
-                                       handles.landmarks(k,2), ...
-                                       handles.landmarks(k,3), ...
+        handles.pointhandle(k) = plot3(landmarks(k,1), ...
+                                       landmarks(k,2), ...
+                                       landmarks(k,3), ...
                                        'm.', 'MarkerSize', 20, ...
                                        'Parent' , handles.coord_plot);
         
         %replot axes...
         axis(handles.coord_plot,'equal');
         
-        %update newly transformed cardinal point coords
-        locations(k,2:4) = num2cell(handles.landmarks(k,1:3));
+        %update newly transformed cardinal point coords (converting back
+        %to a cell array first)
+        locations(k,2:4) = num2cell(landmarks(k,1:3));
                                               
     end
     
@@ -287,7 +296,7 @@ if(handles.point_count >= 5)
     
     %find matrix (A) and vector (B) needed to map head to cardinal points
     %with affine transformation
-    [A,B] = affinemap(handles.AtlasLandmarks,handles.landmarks);
+    [A,B] = affinemap(handles.AtlasLandmarks,landmarks);
 
     mesh_trans = handles.mesh;
     mesh_trans.node = affine_trans_RJC(handles.mesh.node,A,B);
@@ -434,19 +443,17 @@ if(~handles.all_points_found)
         % extract coords
         Coords = data_num(1,2:4);
 
-        % update 5 landmark points if they are being measured (they are the
-        % first 5 points)
-        if(handles.point_count <= 5)
-            handles.landmarks(handles.point_count,:) = Coords;
+        % disable head alignment butten for first five points (they are the
+        % landmark positions)
+        if(handles.point_count < 5)
             set(handles.HeadAlign,'Enable','off');
-        else % otherwise do coord transform on measured points
+        % enable head allign after 5 points...
+        elseif(handles.point_count == 5)
+            set(handles.HeadAlign,'Enable','on');
+        % Do coord transform on points measured after landmark points
+        else 
             Coords = Coords + handles.TransformVector;
             Coords = Coords*handles.TransformMatrix';
-        end
-
-        % enable head allign after 5 points...
-        if(handles.point_count == 5)
-            set(handles.HeadAlign,'Enable','on');
         end
 
         % Update table with newly measured x y and z values
