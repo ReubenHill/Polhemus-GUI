@@ -143,8 +143,6 @@ else
     %measured head point until the last head point is measured.
     handles.point_count = 0;
 
-    handles.locations = []; %the list of locations
-
     handles.all_points_found = false;
 
     %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
@@ -173,11 +171,13 @@ else
 %        end
         
         FileID = fopen([pathname filename]);
-        handles.locations = textscan(FileID,'%s','delimiter','\n');
+        locations = textscan(FileID,'%s','delimiter','\n');
+        % locations is a local variable that holds location data in this
+        % function
 
         % append to list of reference points and convert to string array
-        handles.locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
-                                                handles.locations{1,1}];
+        locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
+                                                locations{1,1}];
         fclose(FileID);
 
         %error test the first serial port functions...
@@ -207,11 +207,10 @@ else
 
             %-----------------Display initial point to find on GUI-------------
 
-            set(handles.infobox,'string',handles.locations(1,1));
+            set(handles.infobox,'string',locations(1,1));
 
-            %location_disp is what is displayed on coords_table
-            location_disp = handles.locations;
-            set(handles.coords_table,'Data',location_disp);
+            % display locations on table in gui
+            set(handles.coords_table,'Data',locations);
 
         %catch exception if error occurs
         catch serialException
@@ -251,12 +250,9 @@ if(handles.point_count >= 5)
     handles.TransformMatrix = TransformMatrix;
     handles.TransformVector = TransformVector;
     
-    %reset list of points to just show locations to find so transformed 
-    %points can be plotted
-    location_disp = handles.locations;
-    %convert to cell array of strings
-    location_disp = cellstr(location_disp);
-
+    % reset list of points to just show locations to find so transformed 
+    % points can be plotted
+    location_disp = coords_table.Data{:,1};
     
     hold on
     
@@ -469,7 +465,9 @@ if(~handles.all_points_found)
         % update point to look for (unless at end of list as given by the
         % length of handles.coords_table.Data - ie the number of headpoints)
         if( handles.point_count < size(handles.coords_table.Data,1) )
-            set(handles.infobox,'string',handles.locations(handles.point_count+1,:));
+            set(handles.infobox,'string',...
+                handles.coords_table.Data(handles.point_count+1,1));
+                % (Set to the next position on the table)
         else
             set(handles.infobox,'string','All points Collected!');
             handles.all_points_found = true;
