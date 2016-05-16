@@ -252,7 +252,7 @@ if(handles.point_count >= 5)
     
     % reset list of points to just show locations to find so transformed 
     % points can be plotted
-    location_disp = handles.coords_table.Data;
+    locations = handles.coords_table.Data;
     
     hold on
     
@@ -275,7 +275,7 @@ if(handles.point_count >= 5)
         axis(handles.coord_plot,'equal');
         
         %update newly transformed cardinal point coords
-        location_disp(k,2:4) = num2cell(handles.landmarks(k,1:3));
+        locations(k,2:4) = num2cell(handles.landmarks(k,1:3));
                                               
     end
     
@@ -283,7 +283,7 @@ if(handles.point_count >= 5)
     
     
     % Show newly transformed cardinal point coords on table
-    handles.coords_table.Data = location_disp;
+    handles.coords_table.Data = locations;
     
     %find matrix (A) and vector (B) needed to map head to cardinal points
     %with affine transformation
