@@ -252,7 +252,7 @@ if(handles.point_count >= 5)
     
     % reset list of points to just show locations to find so transformed 
     % points can be plotted
-    location_disp = coords_table.Data{:,1};
+    location_disp = handles.coords_table.Data;
     
     hold on
     
