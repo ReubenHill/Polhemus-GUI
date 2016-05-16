@@ -57,7 +57,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 
 % Edit the above text to modify the response to help BORL_poldigi_gui_ver1
 
-% Last Modified by GUIDE v2.5 19-Jul-2013 15:13:54
+% Last Modified by GUIDE v2.5 16-May-2016 18:29:38
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -543,13 +543,27 @@ function save_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%get the current string display on the location display box
-location_disp = get(handles.coords_list,'string');
+% Open a "Save As..." Dialogue with different saving options as shown.
+% The filterIndex gives the index (1, 2 or 3) of the chosen save type.
+[fileName,pathName,filterIndex] = ... 
+    uiputfile({'*.csv;*.dat;*.txt', ... 
+    'Comma-delimited text files (*.csv) (*.dat) (*.txt)'; ...
+    ...
+    '*.mat','MAT-file (*.mat)'; ...
+    ...
+    '*.xls;*.xlsb;*.xlsm;*.xlsx', ...
+    'Excel® spreadsheet files (*.xls) (*.xlsb) (*.xlsm) (*.xlsx)'; ...
+    },'Save As...');
 
-[Filename,Pathname] = uiputfile('Output_BORL_poldigi.txt');
-outputFile = fopen([Pathname Filename],'w');
-for k = 1:size(location_disp,1)
-    %[position,X,Y,Z] = sscanf(location_disp(k,:),'%s \t%f \t%f \t%f');
-    fprintf(outputFile,'%s\n',location_disp(k,:));
+% If the chosen save type is .mat then use a standard matlab save command
+if(filterIndex == 2)
+    dataOutput = get(handles.coords_table,'Data');
+    save([pathName fileName],'dataOutput');
+% Otherwise create a table from the cell array and output that to file.
+else
+    tableToOutput = cell2table(get(handles.coords_table,'Data'),...
+                    'VariableNames',get(handles.coords_table,'ColumnName'));
+    % Note that writetable changes its output depending on the fileName
+    % type.
+    writetable(tableToOutput,[pathName fileName]);
 end
-fclose(outputFile);
