@@ -522,20 +522,21 @@ if (handles.point_count ~= 0)
         handles.coords_table.Data{handles.point_count,3} = []; % y
         handles.coords_table.Data{handles.point_count,4} = []; % z
 
-        %remove point from graph
+        % Remove point from graph...
         delete(handles.pointhandle(handles.point_count));
-        %replot axes...
+        % and replot axes.
         axis(handles.coord_plot,'equal');
-
-        % decrement point_count so next measurement is of the point just deleted
+        
+        % Decrement point_count so next measurement is of the point which
+        % has just been deleted
         handles.point_count = handles.point_count - 1;
-
-        %update the all points collected bool
+        
+        % Update the all points collected bool if set to true
         if(handles.all_points_found)
             handles.all_points_found = false;
         end
 
-        %disable align if not enough points
+        % Disable align if now not enough points
         if(handles.point_count <= 5)
             set(handles.HeadAlign,'Enable','off');
         end
