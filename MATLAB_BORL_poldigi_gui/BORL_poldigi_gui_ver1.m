@@ -462,21 +462,13 @@ if(~handles.all_points_found)
             set(handles.HeadAlign,'Enable','on');
         end
 
-        % Update table
+        % Update table with newly measured x y and z values
+        handles.coords_table.Data(handles.point_count,2:4) = ...
+            num2cell(handles.landmarks(handles.point_count,1:3));
         
-        % Initially get the current data from the table
-        temp_coords_table = get(handles.coords_table, 'Data');
-        
-        % Add coordintates to temporary table
-        temp_coords_table(handles.point_count,2:4) = ...
-            num2cell(handles.landmarks(handles.point_count,1:3));     
-
-        % update with the new coordinate values
-        set(handles.coords_table,'Data',temp_coords_table);
-
         % update point to look for (unless at end of list as given by the
-        % length of temp_coords_table - ie the number of headpoints)
-        if( handles.point_count < size(temp_coords_table,1) )
+        % length of handles.coords_table.Data - ie the number of headpoints)
+        if( handles.point_count < size(handles.coords_table.Data,1) )
             set(handles.infobox,'string',handles.locations(handles.point_count+1,:));
         else
             set(handles.infobox,'string','All points Collected!');
