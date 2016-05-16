@@ -274,25 +274,16 @@ if(handles.point_count >= 5)
         %replot axes...
         axis(handles.coord_plot,'equal');
         
-        %Show new cardinal point coords on table
-        
-        %append coordinates to location string
-        location_disp{k,1} = sprintf( '%s \t %6.3f \t %6.3f \t %6.3f ', ...
-                                    location_disp{k,1}, ... 
-                                    handles.landmarks(k,1), ...
-                                    handles.landmarks(k,2), ...
-                                    handles.landmarks(k,3));
-
-               
+        %update newly transformed cardinal point coords
+        location_disp(k,2:4) = num2cell(handles.landmarks(k,1:3));
+                                              
     end
     
     hold off
     
     
-    %update coordinate list with new coordinates
-    %   convert from cell array back to char array
-    location_disp = char(location_disp);
-    set(handles.coords_list,'string',location_disp);
+    % Show newly transformed cardinal point coords on table
+    handles.coords_table.Data = location_disp;
     
     %find matrix (A) and vector (B) needed to map head to cardinal points
     %with affine transformation
