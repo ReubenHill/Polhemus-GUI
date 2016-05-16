@@ -517,23 +517,10 @@ function remove_last_pt_Callback(hObject, eventdata, handles)
 if (handles.point_count ~= 0)
     if(handles.point_count ~= 5 || strcmp(get(handles.HeadAlign,'Enable'),'on') )
 
-        %get the current string display on the location display box
-        location_disp = get(handles.coords_list,'string');
-
-        %convert to cell array of strings
-        location_disp = cellstr(location_disp);
-
-        %replace last measured point with just the string of its name
-        location_disp{handles.point_count,1} = handles.locations(handles.point_count,:);
-
-        %return cell array to string array
-        location_disp = char(location_disp);
-
-        %update the list of measured coords.
-        set(handles.coords_list,'string',location_disp);
-
-        %update the coord to measure next
-        set(handles.infobox,'string',handles.locations(handles.point_count,:));
+        % Set the last measured values of x, y and z to be empty cells
+        handles.coords_table.Data{handles.point_count,2} = []; % x
+        handles.coords_table.Data{handles.point_count,3} = []; % y
+        handles.coords_table.Data{handles.point_count,4} = []; % z
 
         %remove point from graph
         delete(handles.pointhandle(handles.point_count));
