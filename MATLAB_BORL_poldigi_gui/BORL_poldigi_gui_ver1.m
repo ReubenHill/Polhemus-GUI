@@ -147,7 +147,9 @@ else
 
     %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
 
-    [filename,pathname] = uigetfile('*.*','Select txt File of Points on Head');
+    [filename,pathname] = ... 
+        uigetfile({'*.txt;*.dat;*.csv','Text Files (*.txt) (*.dat) (*.csv)'} ...
+                  ,'Select Location List File - Each Measurement Point Should be on a New Line');
 
     if isequal(filename,0)
         disp('User selected Cancel')
