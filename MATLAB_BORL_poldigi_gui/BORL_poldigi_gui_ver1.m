@@ -4,7 +4,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 % reuben.w.hill@gmail.com
 %
 % -------------------------------------------------------------------------
-%                   -- BORL POLGUI Ver 1 for Matlab R2012b  -- 
+%                   -- BORL POLGUI v1.1.0 for Matlab R2015b  -- 
 % -------------------------------------------------------------------------
 %
 % For the Polhemus PATRIOT digitiser, attached to stylus pen with button.
@@ -57,7 +57,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 
 % Edit the above text to modify the response to help BORL_poldigi_gui_ver1
 
-% Last Modified by GUIDE v2.5 19-Jul-2013 15:13:54
+% Last Modified by GUIDE v2.5 16-May-2016 18:29:38
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -143,13 +143,13 @@ else
     %measured head point until the last head point is measured.
     handles.point_count = 0;
 
-    handles.locations = []; %the list of locations
-
     handles.all_points_found = false;
 
     %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
 
-    [filename,pathname] = uigetfile('*.*','Select txt File of Points on Head');
+    [filename,pathname] = ... 
+        uigetfile({'*.txt;*.dat;*.csv','Text Files (*.txt) (*.dat) (*.csv)'} ...
+                  ,'Select Location List File - Each Measurement Point Should be on a New Line');
 
     if isequal(filename,0)
         disp('User selected Cancel')
@@ -173,11 +173,13 @@ else
 %        end
         
         FileID = fopen([pathname filename]);
-        handles.locations = textscan(FileID,'%s','delimiter','\n');
+        locations = textscan(FileID,'%s','delimiter','\n');
+        % locations is a local variable that holds location data in this
+        % function
 
         % append to list of reference points and convert to string array
-        handles.locations = char(char('Nasion','Inion','Ar','Al','Cz'), ... 
-                                                char(handles.locations{1,1}));
+        locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
+                                                locations{1,1}];
         fclose(FileID);
 
         %error test the first serial port functions...
@@ -207,11 +209,10 @@ else
 
             %-----------------Display initial point to find on GUI-------------
 
-            set(handles.infobox,'string',handles.locations(1,:));
+            set(handles.infobox,'string',locations(1,1));
 
-            %location_disp is what is displayed on the coords_list box
-            location_disp = handles.locations;
-            set(handles.coords_list,'string',location_disp);
+            % display locations on table in gui
+            set(handles.coords_table,'Data',locations);
 
         %catch exception if error occurs
         catch serialException
@@ -237,36 +238,6 @@ end
 
 
 
-
-
-
-% --- Executes on selection change in coords_list.
-function coords_list_Callback(hObject, eventdata, handles)
-% hObject    handle to coords_list (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns coords_list contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from coords_list
-
-
-
-
-% --- Executes during object creation, after setting all properties.
-function coords_list_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to coords_list (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: listbox controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-
-
 % --- Executes on button press in HeadAlign.
 function HeadAlign_Callback(hObject, eventdata, handles)
 % hObject    handle to HeadAlign (see GCBO)
@@ -275,62 +246,59 @@ function HeadAlign_Callback(hObject, eventdata, handles)
 
 if(handles.point_count >= 5)
     
+    % extract the locations
+    locations = handles.coords_table.Data;
+    
+    % extract the landmark locations (the first five data points)...
+    landmarks = locations(1:5,2:4);
+    % ... and convert to ordinary array from cell array
+    landmarks = cell2mat(landmarks);
+    
     %get transformation matrix to new coord system
-    [TransformMatrix,TransformVector] = GetCoordTransform(handles.landmarks);
+    [TransformMatrix,TransformVector] = GetCoordTransform(landmarks);
     %save tranformation
     handles.TransformMatrix = TransformMatrix;
     handles.TransformVector = TransformVector;
     
-    %reset list of points to just show locations to find so transformed 
-    %points can be plotted
-    location_disp = handles.locations;
-    %convert to cell array of strings
-    location_disp = cellstr(location_disp);
-
+    % reset list of points to just show locations to find so transformed 
+    % points can be plotted
+    locations = handles.coords_table.Data;
     
     hold on
     
-    for k = 1:size(handles.landmarks,1)
+    for k = 1:size(landmarks,1)
         %transform cardinal points
-        handles.landmarks(k,:) = handles.landmarks(k,:) + TransformVector;
-        handles.landmarks(k,:) = handles.landmarks(k,:)*TransformMatrix';
+        landmarks(k,:) = landmarks(k,:) + TransformVector;
+        landmarks(k,:) = landmarks(k,:)*TransformMatrix';
 
         %remove old point from graph
         delete(handles.pointhandle(k));
         
         %replot point
-        handles.pointhandle(k) = plot3(handles.landmarks(k,1), ...
-                                       handles.landmarks(k,2), ...
-                                       handles.landmarks(k,3), ...
+        handles.pointhandle(k) = plot3(landmarks(k,1), ...
+                                       landmarks(k,2), ...
+                                       landmarks(k,3), ...
                                        'm.', 'MarkerSize', 20, ...
                                        'Parent' , handles.coord_plot);
         
         %replot axes...
         axis(handles.coord_plot,'equal');
         
-        %Show new cardinal point coords on table
-        
-        %append coordinates to location string
-        location_disp{k,1} = sprintf( '%s \t %6.3f \t %6.3f \t %6.3f ', ...
-                                    location_disp{k,1}, ... 
-                                    handles.landmarks(k,1), ...
-                                    handles.landmarks(k,2), ...
-                                    handles.landmarks(k,3));
-
-               
+        %update newly transformed cardinal point coords (converting back
+        %to a cell array first)
+        locations(k,2:4) = num2cell(landmarks(k,1:3));
+                                              
     end
     
     hold off
     
     
-    %update coordinate list with new coordinates
-    %   convert from cell array back to char array
-    location_disp = char(location_disp);
-    set(handles.coords_list,'string',location_disp);
+    % Show newly transformed cardinal point coords on table
+    handles.coords_table.Data = locations;
     
     %find matrix (A) and vector (B) needed to map head to cardinal points
     %with affine transformation
-    [A,B] = affinemap(handles.AtlasLandmarks,handles.landmarks);
+    [A,B] = affinemap(handles.AtlasLandmarks,landmarks);
 
     mesh_trans = handles.mesh;
     mesh_trans.node = affine_trans_RJC(handles.mesh.node,A,B);
@@ -473,43 +441,33 @@ if(~handles.all_points_found)
         % 5 Azimuth of stylus in degrees
         % 6 Elevation of stylus in degrees
         % 7 Roll of stylus degrees
-        
+       
+        % extract coords
         Coords = data_num(1,2:4);
-        
-        %get the current string display on the location display box
-        location_disp = get(handles.coords_list,'string');
 
-        %update 5 landmark points if they are being measured (they are the
-        %first 5 points)
-        if(handles.point_count <= 5)
-            handles.landmarks(handles.point_count,:) = Coords;
+        % disable head alignment butten for first five points (they are the
+        % landmark positions)
+        if(handles.point_count < 5)
             set(handles.HeadAlign,'Enable','off');
-        else %otherwise do coord transform on measured points
+        % enable head allign after 5 points...
+        elseif(handles.point_count == 5)
+            set(handles.HeadAlign,'Enable','on');
+        % Do coord transform on points measured after landmark points
+        else 
             Coords = Coords + handles.TransformVector;
             Coords = Coords*handles.TransformMatrix';
         end
 
-        %enable head allign after 5 points...
-        if(handles.point_count == 5)
-            set(handles.HeadAlign,'Enable','on');
-        end
-
-        %convert to cell array of strings
-        location_disp = cellstr(location_disp);
-
-        %append coordinates to location string
-        location_disp{handles.point_count,1} = sprintf( '%s \t %6.3f \t %6.3f \t %6.3f ', ...
-                                    location_disp{handles.point_count,1}, ... 
-                                    Coords(1),Coords(2),Coords(3));
+        % Update table with newly measured x y and z values
+        handles.coords_table.Data(handles.point_count,2:4) = ...
+            num2cell(Coords);
         
-        %convert from cell array back to char array
-        location_disp = char(location_disp);
-
-        set(handles.coords_list,'string',location_disp);
-
-        %update point to look for (unless at end of list)
-        if( handles.point_count < size(location_disp,1) )
-            set(handles.infobox,'string',handles.locations(handles.point_count+1,:));
+        % update point to look for (unless at end of list as given by the
+        % length of handles.coords_table.Data - ie the number of headpoints)
+        if( handles.point_count < size(handles.coords_table.Data,1) )
+            set(handles.infobox,'string',...
+                handles.coords_table.Data(handles.point_count+1,1));
+                % (Set to the next position on the table)
         else
             set(handles.infobox,'string','All points Collected!');
             handles.all_points_found = true;
@@ -549,38 +507,26 @@ function remove_last_pt_Callback(hObject, eventdata, handles)
 if (handles.point_count ~= 0)
     if(handles.point_count ~= 5 || strcmp(get(handles.HeadAlign,'Enable'),'on') )
 
-        %get the current string display on the location display box
-        location_disp = get(handles.coords_list,'string');
+        % Set the last measured values of x, y and z to be empty cells
+        handles.coords_table.Data{handles.point_count,2} = []; % x
+        handles.coords_table.Data{handles.point_count,3} = []; % y
+        handles.coords_table.Data{handles.point_count,4} = []; % z
 
-        %convert to cell array of strings
-        location_disp = cellstr(location_disp);
-
-        %replace last measured point with just the string of its name
-        location_disp{handles.point_count,1} = handles.locations(handles.point_count,:);
-
-        %return cell array to string array
-        location_disp = char(location_disp);
-
-        %update the list of measured coords.
-        set(handles.coords_list,'string',location_disp);
-
-        %update the coord to measure next
-        set(handles.infobox,'string',handles.locations(handles.point_count,:));
-
-        %remove point from graph
+        % Remove point from graph...
         delete(handles.pointhandle(handles.point_count));
-        %replot axes...
+        % and replot axes.
         axis(handles.coord_plot,'equal');
-
-        % decrement point_count so next measurement is of the point just deleted
+        
+        % Decrement point_count so next measurement is of the point which
+        % has just been deleted
         handles.point_count = handles.point_count - 1;
-
-        %update the all points collected bool
+        
+        % Update the all points collected bool if set to true
         if(handles.all_points_found)
             handles.all_points_found = false;
         end
 
-        %disable align if not enough points
+        % Disable align if now not enough points
         if(handles.point_count <= 5)
             set(handles.HeadAlign,'Enable','off');
         end
@@ -599,13 +545,27 @@ function save_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%get the current string display on the location display box
-location_disp = get(handles.coords_list,'string');
+% Open a "Save As..." Dialogue with different saving options as shown.
+% The filterIndex gives the index (1, 2 or 3) of the chosen save type.
+[fileName,pathName,filterIndex] = ... 
+    uiputfile({'*.csv;*.dat;*.txt', ... 
+    'Comma-delimited text files (*.csv) (*.dat) (*.txt)'; ...
+    ...
+    '*.mat','MAT-file (*.mat)'; ...
+    ...
+    '*.xls;*.xlsb;*.xlsm;*.xlsx', ...
+    'Excel® spreadsheet files (*.xls) (*.xlsb) (*.xlsm) (*.xlsx)'; ...
+    },'Save As...');
 
-[Filename,Pathname] = uiputfile('Output_BORL_poldigi.txt');
-outputFile = fopen([Pathname Filename],'w');
-for k = 1:size(location_disp,1)
-    %[position,X,Y,Z] = sscanf(location_disp(k,:),'%s \t%f \t%f \t%f');
-    fprintf(outputFile,'%s\n',location_disp(k,:));
+% If the chosen save type is .mat then use a standard matlab save command
+if(filterIndex == 2)
+    dataOutput = get(handles.coords_table,'Data');
+    save([pathName fileName],'dataOutput');
+% Otherwise create a table from the cell array and output that to file.
+else
+    tableToOutput = cell2table(get(handles.coords_table,'Data'),...
+                    'VariableNames',get(handles.coords_table,'ColumnName'));
+    % Note that writetable changes its output depending on the fileName
+    % type.
+    writetable(tableToOutput,[pathName fileName]);
 end
-fclose(outputFile);
