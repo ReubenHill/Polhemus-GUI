@@ -4,7 +4,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 % reuben.w.hill@gmail.com
 %
 % -------------------------------------------------------------------------
-%                   -- BORL POLGUI Ver 1 for Matlab R2012b  -- 
+%                   -- BORL POLGUI v1.1.0 for Matlab R2015b  -- 
 % -------------------------------------------------------------------------
 %
 % For the Polhemus PATRIOT digitiser, attached to stylus pen with button.
