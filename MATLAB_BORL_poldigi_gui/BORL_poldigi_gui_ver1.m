@@ -577,3 +577,12 @@ function coords_table_CellSelectionCallback(hObject, eventdata, handles)
 % eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
 %	Indices: row and column indices of the cell(s) currently selecteds
 % handles    structure with handles and user data (see GUIDATA)
+if(isempty(eventdata.Indices))
+    % give selectedRow empty value if the callback is triggered by
+    % deselection (eg by the removal of a set of coordinates)
+    handles.selectedRow = [];
+else
+    handles.selectedRow = eventdata.Indices(1);
+end
+guidata(hObject,handles)
+
