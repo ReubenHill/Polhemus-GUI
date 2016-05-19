@@ -57,7 +57,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 
 % Edit the above text to modify the response to help BORL_poldigi_gui_ver1
 
-% Last Modified by GUIDE v2.5 19-May-2016 11:43:17
+% Last Modified by GUIDE v2.5 19-May-2016 13:57:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -577,12 +577,49 @@ function coords_table_CellSelectionCallback(hObject, eventdata, handles)
 % eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
 %	Indices: row and column indices of the cell(s) currently selecteds
 % handles    structure with handles and user data (see GUIDATA)
+
 if(isempty(eventdata.Indices))
-    % give selectedRow empty value if the callback is triggered by
-    % deselection (eg by the removal of a set of coordinates)
-    handles.selectedRow = [];
+    % delete 'selectedRow' field of 'handles' if the callback is triggered 
+    % by deselection (eg by the removal or addition of a set of coordinates)
+    handles = rmfield(handles,'selectedRow');
 else
+    % extract the row from where the user clicked on the table.
     handles.selectedRow = eventdata.Indices(1);
 end
 guidata(hObject,handles)
+
+
+
+% --- Executes on button press in InsertRowPushbutton.
+function InsertRowPushbutton_Callback(hObject, eventdata, handles)
+% hObject    handle to InsertRowPushbutton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+data = get(handles.coords_table,'Data');
+
+% See if the selectedRow variable exists within the handles struct 
+% (doesn't if no selection performed before clicking or cell has been 
+% deselected)
+if(isfield(handles,'selectedRow'))
+    % insert below selected row...
+    row = handles.selectedRow;
+    dataBelowSelectedRow = data(row+1:end,:);
+    % add new row by adding a single rowed cell array
+    data(row+1,:) = cell(1,size(data,2));
+    % add back the data that was saved before by concatenating below where
+    % the new row has been added.
+    data = [data(1:row+1,:) ; dataBelowSelectedRow];  
+else
+    % insert empty row at the end
+    data{end+1,1} = [];
+end
+% save the newly changed data to the table on the gui
+set(handles.coords_table,'Data',data); 
+
+% --- Executes on button press in DeleteRowPushbutton.
+function DeleteRowPushbutton_Callback(hObject, eventdata, handles)
+% hObject    handle to DeleteRowPushbutton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 
