@@ -602,6 +602,20 @@ data = get(handles.coords_table,'Data');
 % (doesn't if no selection performed before clicking or cell has been 
 % deselected)
 if(isfield(handles,'selectedRow'))
+    
+    if(handles.selectedRow < 5)
+        % trying to insert into one of the landmark points
+        warningString = {'About to insert or delete a landmark point.'; ... 
+                    'Pressing OK will remove the ability to align atlas points...'}
+        button = questdlg(warningString,'Warning','OK','Cancel','default');
+        if(button == 'OK')
+            handles.CannotAlignAtlasPoints = true;
+        else
+            % user selected "Cancel"
+            set
+        end      
+    end
+    
     % insert below selected row...
     row = handles.selectedRow;
     dataBelowSelectedRow = data(row+1:end,:);
@@ -610,6 +624,7 @@ if(isfield(handles,'selectedRow'))
     % add back the data that was saved before by concatenating below where
     % the new row has been added.
     data = [data(1:row+1,:) ; dataBelowSelectedRow];  
+    
 else
     % insert empty row at the end
     data{end+1,1} = [];
