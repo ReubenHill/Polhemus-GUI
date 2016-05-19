@@ -57,7 +57,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 
 % Edit the above text to modify the response to help BORL_poldigi_gui_ver1
 
-% Last Modified by GUIDE v2.5 16-May-2016 18:29:38
+% Last Modified by GUIDE v2.5 19-May-2016 11:43:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -569,3 +569,11 @@ else
     % type.
     writetable(tableToOutput,[pathName fileName]);
 end
+
+
+% --- Executes when selected cell(s) is changed in coords_table.
+function coords_table_CellSelectionCallback(hObject, eventdata, handles)
+% hObject    handle to coords_table (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+%	Indices: row and column indices of the cell(s) currently selecteds
+% handles    structure with handles and user data (see GUIDATA)
