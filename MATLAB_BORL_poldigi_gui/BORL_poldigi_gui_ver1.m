@@ -615,8 +615,12 @@ if(isfield(handles,'selectedRow'))
         data = [data(1:row+1,:) ; dataBelowSelectedRow];  
     end    
 else
-    % insert empty row at the end
-    data{end+1,1} = [];
+%    % insert empty row at the end
+%    data{end+1,1} = [];
+    
+    % Tell user to select a row before inserting
+    errordlg('Please select a row to to insert below.','Insert Error','modal');
+    
 end
 % save the newly changed data to the table on the gui
 set(handles.coords_table,'Data',data); 
