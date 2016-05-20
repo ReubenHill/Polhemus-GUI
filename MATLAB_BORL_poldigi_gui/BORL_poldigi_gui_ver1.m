@@ -562,7 +562,7 @@ if(filterIndex == 2)
     dataOutput = get(handles.coords_table,'Data');
     save([pathName fileName],'dataOutput');
 % Otherwise create a table from the cell array and output that to file.
-else
+elseif(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
     data = get(handles.coords_table,'Data');
     
     % check data cell array has same number of columns as there are column
@@ -574,15 +574,25 @@ else
     else
         % find any empty cells in Locations data
         emptyLocationNames = cellfun('isempty',data(:,1));
+        buttonPressed = 'OK';
+        if(any(emptyLocationNames))
+            % Warn the user if there are any location names missing...
+            buttonPressed = questdlg({'Some location names are unspecified.';
+                                      'Missing location names will be replaced by the symbol "-".';...
+                                      'Would you like to continue?'},...
+                                      'Warning','Yes','No','modal'); 
+        end
+        %Only save data if user presses OK or OK has been set previously.
+        if(strcmp(buttonPressed,'OK'))
+            %Mark empty location names as '-'
+            data(emptyLocationNames,1) = {'-'};       
 
-        %Mark empty location names as '-'
-        data(emptyLocationNames,1) = {'-'};       
-
-        tableToOutput = cell2table(data,'VariableNames', ...
-                                   get(handles.coords_table,'ColumnName'));
-        % Note that writetable changes its output depending on the fileName
-        % type.
-        writetable(tableToOutput,[pathName fileName]);
+            tableToOutput = cell2table(data,'VariableNames', ...
+                                       get(handles.coords_table,'ColumnName'));
+            % Note that writetable changes its output depending on the fileName
+            % type.
+            writetable(tableToOutput,[pathName fileName]);
+        end
     end
 end
 
