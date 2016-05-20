@@ -563,11 +563,27 @@ if(filterIndex == 2)
     save([pathName fileName],'dataOutput');
 % Otherwise create a table from the cell array and output that to file.
 else
-    tableToOutput = cell2table(get(handles.coords_table,'Data'),...
-                    'VariableNames',get(handles.coords_table,'ColumnName'));
-    % Note that writetable changes its output depending on the fileName
-    % type.
-    writetable(tableToOutput,[pathName fileName]);
+    data = get(handles.coords_table,'Data');
+    
+    % check data cell array has same number of columns as there are column
+    % names.
+    if(size(data,2) < length(get(handles.coords_table,'ColumnName')))
+        % dont save table if not enough data is available
+        errordlg('Cannot save without recorded location data.', ... 
+            'Save Error','modal');
+    else
+        % find any empty cells in Locations data
+        emptyLocationNames = cellfun('isempty',data(:,1));
+
+        %Mark empty location names as '-'
+        data(emptyLocationNames,1) = {'-'};       
+
+        tableToOutput = cell2table(data,'VariableNames', ...
+                                   get(handles.coords_table,'ColumnName'));
+        % Note that writetable changes its output depending on the fileName
+        % type.
+        writetable(tableToOutput,[pathName fileName]);
+    end
 end
 
 
