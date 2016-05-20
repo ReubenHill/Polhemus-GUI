@@ -574,7 +574,7 @@ elseif(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
     else
         % find any empty cells in Locations data
         emptyLocationNames = cellfun('isempty',data(:,1));
-        buttonPressed = 'OK';
+        buttonPressed = 'Yes';
         if(any(emptyLocationNames))
             % Warn the user if there are any location names missing...
             buttonPressed = questdlg({'Some location names are unspecified.';
@@ -582,8 +582,8 @@ elseif(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
                                       'Would you like to continue?'},...
                                       'Warning','Yes','No','modal'); 
         end
-        %Only save data if user presses OK or OK has been set previously.
-        if(strcmp(buttonPressed,'OK'))
+        %Only save data if user presses Yes or Yes has been set previously.
+        if(strcmp(buttonPressed,'Yes'))
             %Mark empty location names as '-'
             data(emptyLocationNames,1) = {'-'};       
 
