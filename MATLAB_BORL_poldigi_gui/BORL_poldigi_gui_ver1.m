@@ -619,8 +619,7 @@ else
 %    data{end+1,1} = [];
     
     % Tell user to select a row before inserting
-    errordlg('Please select a row to to insert below.','Insert Error','modal');
-    
+    errordlg('Please select a row to insert below.','Insert Error','modal');   
 end
 % save the newly changed data to the table on the gui
 set(handles.coords_table,'Data',data); 
@@ -631,3 +630,21 @@ function DeleteRowPushbutton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+data = get(handles.coords_table,'Data');
+
+% See if the selectedRow variable exists within the handles struct 
+% (doesn't if no selection performed before clicking or cell has been 
+% deselected)
+if(isfield(handles,'selectedRow'))
+    if(handles.selectedRow < 5)
+        errordlg('Cannot insert or delete Atlas Points','Error','modal');
+    else
+        % delete selected row...
+        data(handles.selectedRow,:) = [];
+    end    
+else
+    % Tell user to select a row before inserting
+    errordlg('Please select a row to delete.','Delete Error','modal');    
+end
+% save the newly changed data to the table on the gui
+set(handles.coords_table,'Data',data); 
