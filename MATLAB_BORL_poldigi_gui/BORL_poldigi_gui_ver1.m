@@ -610,7 +610,7 @@ if(isempty(eventdata.Indices))
     handles = rmfield(handles,'selectedRow');
 else
     % extract the row from where the user clicked on the table.
-    handles.selectedRow = eventdata.Indices(1);
+    handles.selectedRow = eventdata.Indices(:,1);
 end
 guidata(hObject,handles)
 
@@ -628,17 +628,17 @@ data = get(handles.coords_table,'Data');
 % (doesn't if no selection performed before clicking or cell has been 
 % deselected)
 if(isfield(handles,'selectedRow'))
-    if(handles.selectedRow < 5)
+    if(handles.selectedRow(1) < 5)
         errordlg('Cannot insert or delete Atlas Points','Error','modal');
     else
-        % insert below selected row...
-        row = handles.selectedRow;
-        dataBelowSelectedRow = data(row+1:end,:);
+        % insert above topmost selected row...
+        row = handles.selectedRow(1);
+        dataBelowSelectedRowInclusive = data(row:end,:);
         % add new row by adding a single rowed cell array
-        data(row+1,:) = cell(1,size(data,2));
+        data(row,:) = cell(1,size(data,2));
         % add back the data that was saved before by concatenating below where
         % the new row has been added.
-        data = [data(1:row+1,:) ; dataBelowSelectedRow];  
+        data = [data(1:row,:) ; dataBelowSelectedRowInclusive];  
     end    
 else
 %    % insert empty row at the end
@@ -662,7 +662,7 @@ data = get(handles.coords_table,'Data');
 % (doesn't if no selection performed before clicking or cell has been 
 % deselected)
 if(isfield(handles,'selectedRow'))
-    if(handles.selectedRow < 5)
+    if(handles.selectedRow(1) <= 5)
         errordlg('Cannot insert or delete Atlas Points','Error','modal');
     else
         % delete selected row...
