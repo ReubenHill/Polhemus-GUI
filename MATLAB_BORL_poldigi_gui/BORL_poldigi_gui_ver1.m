@@ -57,7 +57,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 
 % Edit the above text to modify the response to help BORL_poldigi_gui_ver1
 
-% Last Modified by GUIDE v2.5 16-May-2016 18:29:38
+% Last Modified by GUIDE v2.5 19-May-2016 13:57:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -562,10 +562,115 @@ if(filterIndex == 2)
     dataOutput = get(handles.coords_table,'Data');
     save([pathName fileName],'dataOutput');
 % Otherwise create a table from the cell array and output that to file.
-else
-    tableToOutput = cell2table(get(handles.coords_table,'Data'),...
-                    'VariableNames',get(handles.coords_table,'ColumnName'));
-    % Note that writetable changes its output depending on the fileName
-    % type.
-    writetable(tableToOutput,[pathName fileName]);
+elseif(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
+    data = get(handles.coords_table,'Data');
+    
+    % check data cell array has same number of columns as there are column
+    % names.
+    if(size(data,2) < length(get(handles.coords_table,'ColumnName')))
+        % dont save table if not enough data is available
+        errordlg('Cannot save without recorded location data.', ... 
+            'Save Error','modal');
+    else
+        % find any empty cells in Locations data
+        emptyLocationNames = cellfun('isempty',data(:,1));
+        buttonPressed = 'Yes';
+        if(any(emptyLocationNames))
+            % Warn the user if there are any location names missing...
+            buttonPressed = questdlg({'Some location names are unspecified.';
+                                      'Missing location names will be replaced by the symbol "-".';...
+                                      'Would you like to continue?'},...
+                                      'Warning','Yes','No','modal'); 
+        end
+        %Only save data if user presses Yes or Yes has been set previously.
+        if(strcmp(buttonPressed,'Yes'))
+            %Mark empty location names as '-'
+            data(emptyLocationNames,1) = {'-'};       
+
+            tableToOutput = cell2table(data,'VariableNames', ...
+                                       get(handles.coords_table,'ColumnName'));
+            % Note that writetable changes its output depending on the fileName
+            % type.
+            writetable(tableToOutput,[pathName fileName]);
+        end
+    end
 end
+
+
+% --- Executes when selected cell(s) is changed in coords_table.
+function coords_table_CellSelectionCallback(hObject, eventdata, handles)
+% hObject    handle to coords_table (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+%	Indices: row and column indices of the cell(s) currently selecteds
+% handles    structure with handles and user data (see GUIDATA)
+
+if(isempty(eventdata.Indices))
+    % delete 'selectedRow' field of 'handles' if the callback is triggered 
+    % by deselection (eg by the removal or addition of a set of coordinates)
+    handles = rmfield(handles,'selectedRow');
+else
+    % extract the row from where the user clicked on the table.
+    handles.selectedRow = eventdata.Indices(1);
+end
+guidata(hObject,handles)
+
+
+
+% --- Executes on button press in InsertRowPushbutton.
+function InsertRowPushbutton_Callback(hObject, eventdata, handles)
+% hObject    handle to InsertRowPushbutton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+data = get(handles.coords_table,'Data');
+
+% See if the selectedRow variable exists within the handles struct 
+% (doesn't if no selection performed before clicking or cell has been 
+% deselected)
+if(isfield(handles,'selectedRow'))
+    if(handles.selectedRow < 5)
+        errordlg('Cannot insert or delete Atlas Points','Error','modal');
+    else
+        % insert below selected row...
+        row = handles.selectedRow;
+        dataBelowSelectedRow = data(row+1:end,:);
+        % add new row by adding a single rowed cell array
+        data(row+1,:) = cell(1,size(data,2));
+        % add back the data that was saved before by concatenating below where
+        % the new row has been added.
+        data = [data(1:row+1,:) ; dataBelowSelectedRow];  
+    end    
+else
+%    % insert empty row at the end
+%    data{end+1,1} = [];
+    
+    % Tell user to select a row before inserting
+    errordlg('Please select a row to insert below.','Insert Error','modal');   
+end
+% save the newly changed data to the table on the gui
+set(handles.coords_table,'Data',data); 
+
+% --- Executes on button press in DeleteRowPushbutton.
+function DeleteRowPushbutton_Callback(hObject, eventdata, handles)
+% hObject    handle to DeleteRowPushbutton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+data = get(handles.coords_table,'Data');
+
+% See if the selectedRow variable exists within the handles struct 
+% (doesn't if no selection performed before clicking or cell has been 
+% deselected)
+if(isfield(handles,'selectedRow'))
+    if(handles.selectedRow < 5)
+        errordlg('Cannot insert or delete Atlas Points','Error','modal');
+    else
+        % delete selected row...
+        data(handles.selectedRow,:) = [];
+    end    
+else
+    % Tell user to select a row before inserting
+    errordlg('Please select a row to delete.','Delete Error','modal');    
+end
+% save the newly changed data to the table on the gui
+set(handles.coords_table,'Data',data); 
