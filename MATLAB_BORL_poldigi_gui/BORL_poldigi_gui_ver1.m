@@ -404,9 +404,12 @@ function CloseFcn(source,event,handles)
 handles = guidata(handles.figure1);
 
 %close port only if not closed
-if(handles.COMport ~= 0)
-    if( ~ strcmp(handles.serial.status, 'closed') )
-        fclose(handles.serial);
+if(isfield(handles,'COMport'))
+    if(handles.COMport ~= 0)
+        if( ~ strcmp(handles.serial.status, 'closed') )
+            fclose(handles.serial);
+        end
+        delete(handles.serial);
     end
 end
 
