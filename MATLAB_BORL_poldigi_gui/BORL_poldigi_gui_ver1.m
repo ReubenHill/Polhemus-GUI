@@ -183,70 +183,70 @@ if isequal(filename,0)
     return
 end
 
-    %load data needed for headpoint plotting
-    handles.AtlasLandmarks = load('refpts_landmarks.mat');
-    handles.AtlasLandmarks = handles.AtlasLandmarks.pts;
-    handles.mesh = load('scalpSurfaceMesh.mat');
-    handles.mesh = handles.mesh.mesh;
+%load data needed for headpoint plotting
+handles.AtlasLandmarks = load('refpts_landmarks.mat');
+handles.AtlasLandmarks = handles.AtlasLandmarks.pts;
+handles.mesh = load('scalpSurfaceMesh.mat');
+handles.mesh = handles.mesh.mesh;
 
-    disp(['User selected ', fullfile(pathname, filename)])
+disp(['User selected ', fullfile(pathname, filename)])
 
-    FileID = fopen([pathname filename]);
-    locations = textscan(FileID,'%s','delimiter','\n');
-    % locations is a local variable that holds location data in this
-    % function
+FileID = fopen([pathname filename]);
+locations = textscan(FileID,'%s','delimiter','\n');
+% locations is a local variable that holds location data in this
+% function
 
-    % append to list of reference points and convert to string array
-    locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
-                                            locations{1,1}];
-    fclose(FileID);
+% append to list of reference points and convert to string array
+locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
+                                        locations{1,1}];
+fclose(FileID);
 
-    %error test the first serial port functions...
-    try 
-        %------------------------SERIAL CALLBACK SETUP---------------------
-        %setup callback function to run when the polhemus system sends 48 bytes
-        %48 bytes is generally position data
-        handles.serial.BytesAvailableFcnCount = 48;
-        handles.serial.BytesAvailableFcnMode = 'byte';
-        handles.serial.BytesAvailableFcn = {@ReadCoordsCallback,handles};
+%error test the first serial port functions...
+try 
+    %------------------------SERIAL CALLBACK SETUP---------------------
+    %setup callback function to run when the polhemus system sends 48 bytes
+    %48 bytes is generally position data
+    handles.serial.BytesAvailableFcnCount = 48;
+    handles.serial.BytesAvailableFcnMode = 'byte';
+    handles.serial.BytesAvailableFcn = {@ReadCoordsCallback,handles};
 
-        %--------------------------OPEN SERIAL PORT------------------------
+    %--------------------------OPEN SERIAL PORT------------------------
 
-        fopen(handles.serial);
+    fopen(handles.serial);
 
-        %-------------------STYLUS POSITION MARKING SETUP------------------
-        %The following ascii string causes the stylus button to send current
-        %coords. Note: 13 is the ascii code for the required newline character
-        string2write = ['L1,1' 13];
-        fwrite(handles.serial,string2write);
-        %fwrite is used because fprintf sometimes adds extra newline characters
+    %-------------------STYLUS POSITION MARKING SETUP------------------
+    %The following ascii string causes the stylus button to send current
+    %coords. Note: 13 is the ascii code for the required newline character
+    string2write = ['L1,1' 13];
+    fwrite(handles.serial,string2write);
+    %fwrite is used because fprintf sometimes adds extra newline characters
 
-        %set to output in cms
-        string2write = ['U1' 13];
-        fwrite(handles.serial,string2write);
+    %set to output in cms
+    string2write = ['U1' 13];
+    fwrite(handles.serial,string2write);
 
 
-        %-----------------Display initial point to find on GUI-------------
+    %-----------------Display initial point to find on GUI-------------
 
-        set(handles.infobox,'string',locations(1,1));
+    set(handles.infobox,'string',locations(1,1));
 
-        % display locations on table in gui
-        set(handles.coords_table,'Data',locations);
+    % display locations on table in gui
+    set(handles.coords_table,'Data',locations);
 
-    %catch exception if error occurs
-    catch serialException
-        disp('COM PORT ERROR OCCURRED: Check COM1 Connection. Baud rate should be 115200')
-        %run close function to close gui and delete serial port objects if
-        %error occurs.
-        CloseFcn(hObject,eventdata,handles);
-        error(message('MATLAB:serial:fopen:opfailed', serialException.message))
-    end
+%catch exception if error occurs
+catch serialException
+    disp('COM PORT ERROR OCCURRED: Check COM1 Connection. Baud rate should be 115200')
+    %run close function to close gui and delete serial port objects if
+    %error occurs.
+    CloseFcn(hObject,eventdata,handles);
+    error(message('MATLAB:serial:fopen:opfailed', serialException.message))
+end
 
-    %-------------set graph axes labels and properties---------------------
+%-------------set graph axes labels and properties---------------------
 
-    xlabel(handles.coord_plot,'X');
-    ylabel(handles.coord_plot,'Y');
-    zlabel(handles.coord_plot,'Z');
+xlabel(handles.coord_plot,'X');
+ylabel(handles.coord_plot,'Y');
+zlabel(handles.coord_plot,'Z');
 
 % Update handles structure
 guidata(hObject, handles);
