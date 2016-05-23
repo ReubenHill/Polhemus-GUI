@@ -199,6 +199,9 @@ locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ...
 % Close file
 fclose(FileID);
 
+% Save locations variable to be loaded next time
+save('savedLocationNames.mat','locations')
+
 %load other data needed for headpoint plotting
 handles.AtlasLandmarks = load('refpts_landmarks.mat');
 handles.AtlasLandmarks = handles.AtlasLandmarks.pts;
