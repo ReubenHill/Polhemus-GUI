@@ -191,12 +191,6 @@ else % the below code runs if a file is selected...
 
     disp(['User selected ', fullfile(pathname, filename)])
 
-    % read headpoints text file
-
-%        if isdeployed
-%           addpath pathname;
-%        end
-
     FileID = fopen([pathname filename]);
     locations = textscan(FileID,'%s','delimiter','\n');
     % locations is a local variable that holds location data in this
