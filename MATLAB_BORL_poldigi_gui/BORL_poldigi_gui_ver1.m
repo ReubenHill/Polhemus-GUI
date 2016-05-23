@@ -145,7 +145,8 @@ handles.COMport = FindPatriotSerial(BaudRate);
 if(handles.COMport ~= 0) %patriot found
     handles.serial = serial(handles.COMport,'BaudRate', BaudRate);
 else
-%----------------------ERROR IF DEVICE NOT FOUND------------------------   
+    
+    %-------------------QUIT & ERROR IF DEVICE NOT FOUND--------------------   
     str1 = 'Polhemus Patriot Device not found or communicated with successfully.';
     str2 = ['Check the device is on and its baud rate is set to ' sprintf('%i',BaudRate) '.'];
     str3 = 'If running in MATLAB, try restarting MATLAB to scan for new serial devices.';
@@ -157,18 +158,19 @@ else
     guidata(hObject, handles);
     CloseFcn(hObject,eventdata,handles);
     return;
+    
 end
 
 
-%------------------------Initialise Variables-----------------------
+%--------------------INITIALISE HANDLES VARIABLES--------------------
 %Set the initial point count to 0. This is incremented before each
 %measured head point until the last head point is measured.
 handles.point_count = 0;
 
 handles.all_points_found = false;
 
-%--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
 
+%--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
 [filename,pathname] = ... 
     uigetfile({'*.txt;*.dat;*.csv','Text Files (*.txt) (*.dat) (*.csv)'} ...
               ,'Select Location List File - Each Measurement Point Should be on a New Line');
