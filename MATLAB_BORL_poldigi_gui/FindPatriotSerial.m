@@ -23,6 +23,7 @@ for k = 1:size(serialInfo.AvailableSerialPorts,1)
         %read coordinates...
         A = fgetl (s);
         fclose(s);
+        delete(s);
         if( size(A,2) == 59 ) %a position reading is a 59 character string
             %com port of patriot successfully found!    
             COMPort = serialInfo.AvailableSerialPorts{k,1};
@@ -34,7 +35,6 @@ for k = 1:size(serialInfo.AvailableSerialPorts,1)
     catch serialException %if error message, the below runs
         fclose(s);
         delete(s);
-        clear s;
     end
 end
 
