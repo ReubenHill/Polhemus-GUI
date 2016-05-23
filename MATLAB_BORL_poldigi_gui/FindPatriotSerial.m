@@ -27,7 +27,7 @@ for k = 1:size(serialInfo.AvailableSerialPorts,1)
             %com port of patriot successfully found!    
             COMPort = serialInfo.AvailableSerialPorts{k,1};
             disp( ['Polhemus Patriot device successfully found on ' serialInfo.AvailableSerialPorts{k,1}] )
-            disp('Device returned string the following string upon "p" command')
+            disp('Device returned the following string upon "p" command')
             disp(A);
             return; %return to calling function
         end
