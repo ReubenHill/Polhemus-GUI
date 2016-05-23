@@ -181,7 +181,7 @@ if isequal(filename,0)
     guidata(hObject, handles);
     CloseFcn(hObject,eventdata,handles);
     return
-else % the below code runs if a file is selected...
+end
 
     %load data needed for headpoint plotting
     handles.AtlasLandmarks = load('refpts_landmarks.mat');
@@ -247,8 +247,6 @@ else % the below code runs if a file is selected...
     xlabel(handles.coord_plot,'X');
     ylabel(handles.coord_plot,'Y');
     zlabel(handles.coord_plot,'Z');
-
-end
 
 % Update handles structure
 guidata(hObject, handles);
