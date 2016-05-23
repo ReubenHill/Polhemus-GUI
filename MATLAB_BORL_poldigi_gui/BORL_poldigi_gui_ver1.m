@@ -163,8 +163,8 @@ end
 
 
 %--------------------INITIALISE HANDLES VARIABLES--------------------
-%Set the initial point count to 0. This is incremented before each
-%measured head point until the last head point is measured.
+% Set the initial point count to 0. This is incremented before each
+% measured head point until the last head point is measured.
 handles.point_count = 0;
 
 handles.all_points_found = false;
