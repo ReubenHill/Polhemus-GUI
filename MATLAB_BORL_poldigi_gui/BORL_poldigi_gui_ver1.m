@@ -57,7 +57,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 
 % Edit the above text to modify the response to help BORL_poldigi_gui_ver1
 
-% Last Modified by GUIDE v2.5 19-May-2016 13:57:56
+% Last Modified by GUIDE v2.5 23-May-2016 16:29:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -145,7 +145,8 @@ handles.COMport = FindPatriotSerial(BaudRate);
 if(handles.COMport ~= 0) %patriot found
     handles.serial = serial(handles.COMport,'BaudRate', BaudRate);
 else
-%----------------------ERROR IF DEVICE NOT FOUND------------------------   
+    
+    %-------------------QUIT & ERROR IF DEVICE NOT FOUND--------------------   
     str1 = 'Polhemus Patriot Device not found or communicated with successfully.';
     str2 = ['Check the device is on and its baud rate is set to ' sprintf('%i',BaudRate) '.'];
     str3 = 'If running in MATLAB, try restarting MATLAB to scan for new serial devices.';
@@ -157,102 +158,110 @@ else
     guidata(hObject, handles);
     CloseFcn(hObject,eventdata,handles);
     return;
+    
 end
 
 
-%------------------------Initialise Variables-----------------------
+%--------------------INITIALISE HANDLES VARIABLES--------------------
 %Set the initial point count to 0. This is incremented before each
 %measured head point until the last head point is measured.
 handles.point_count = 0;
 
 handles.all_points_found = false;
 
+
 %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
 
-[filename,pathname] = ... 
-    uigetfile({'*.txt;*.dat;*.csv','Text Files (*.txt) (*.dat) (*.csv)'} ...
-              ,'Select Location List File - Each Measurement Point Should be on a New Line');
+try
+    load('savedLocationNames.mat','locations');
+catch
+    uiwait(warndlg('Could not find previously used location list.',...
+        'Warning','modal'));
+    
+    [filename,pathname] = ... 
+        uigetfile({'*.txt;*.dat;*.csv','Text Files (*.txt) (*.dat) (*.csv)'} ...
+        ,'Select Location List File - Each Measurement Point Should be on a New Line');
 
-if isequal(filename,0)
-    disp('User selected Cancel')
-    %Quit the gui
-    guidata(hObject, handles);
-    CloseFcn(hObject,eventdata,handles);
-    return
-else % the below code runs if a file is selected...
-
-    %load data needed for headpoint plotting
-    handles.AtlasLandmarks = load('refpts_landmarks.mat');
-    handles.AtlasLandmarks = handles.AtlasLandmarks.pts;
-    handles.mesh = load('scalpSurfaceMesh.mat');
-    handles.mesh = handles.mesh.mesh;
+    if isequal(filename,0)
+        disp('User selected Cancel')
+        %Quit the gui
+        guidata(hObject, handles);
+        CloseFcn(hObject,eventdata,handles);
+        return
+    end
 
     disp(['User selected ', fullfile(pathname, filename)])
 
-    % read headpoints text file
-
-%        if isdeployed
-%           addpath pathname;
-%        end
-
+    % Open File
     FileID = fopen([pathname filename]);
-    locations = textscan(FileID,'%s','delimiter','\n');
+
     % locations is a local variable that holds location data in this
     % function
+    locations = textscan(FileID,'%s','delimiter','\n');
 
     % append to list of reference points and convert to string array
     locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
-                                            locations{1,1}];
+        locations{1,1}];
+
+    % Close file
     fclose(FileID);
 
-    %error test the first serial port functions...
-    try 
-        %------------------------SERIAL CALLBACK SETUP---------------------
-        %setup callback function to run when the polhemus system sends 48 bytes
-        %48 bytes is generally position data
-        handles.serial.BytesAvailableFcnCount = 48;
-        handles.serial.BytesAvailableFcnMode = 'byte';
-        handles.serial.BytesAvailableFcn = {@ReadCoordsCallback,handles};
-
-        %--------------------------OPEN SERIAL PORT------------------------
-
-        fopen(handles.serial);
-
-        %-------------------STYLUS POSITION MARKING SETUP------------------
-        %The following ascii string causes the stylus button to send current
-        %coords. Note: 13 is the ascii code for the required newline character
-        string2write = ['L1,1' 13];
-        fwrite(handles.serial,string2write);
-        %fwrite is used because fprintf sometimes adds extra newline characters
-
-        %set to output in cms
-        string2write = ['U1' 13];
-        fwrite(handles.serial,string2write);
-
-
-        %-----------------Display initial point to find on GUI-------------
-
-        set(handles.infobox,'string',locations(1,1));
-
-        % display locations on table in gui
-        set(handles.coords_table,'Data',locations);
-
-    %catch exception if error occurs
-    catch serialException
-        disp('COM PORT ERROR OCCURRED: Check COM1 Connection. Baud rate should be 115200')
-        %run close function to close gui and delete serial port objects if
-        %error occurs.
-        CloseFcn(hObject,eventdata,handles);
-        error(message('MATLAB:serial:fopen:opfailed', serialException.message))
-    end
-
-    %-------------set graph axes labels and properties---------------------
-
-    xlabel(handles.coord_plot,'X');
-    ylabel(handles.coord_plot,'Y');
-    zlabel(handles.coord_plot,'Z');
-
+    % Save locations variable to be loaded next time
+    save('savedLocationNames.mat','locations')
 end
+
+%load other data needed for headpoint plotting
+handles.AtlasLandmarks = load('refpts_landmarks.mat');
+handles.AtlasLandmarks = handles.AtlasLandmarks.pts;
+handles.mesh = load('scalpSurfaceMesh.mat');
+handles.mesh = handles.mesh.mesh;
+
+%error test the first serial port functions...
+try 
+    %------------------------SERIAL CALLBACK SETUP---------------------
+    %setup callback function to run when the polhemus system sends 48 bytes
+    %48 bytes is generally position data
+    handles.serial.BytesAvailableFcnCount = 48;
+    handles.serial.BytesAvailableFcnMode = 'byte';
+    handles.serial.BytesAvailableFcn = {@ReadCoordsCallback,handles};
+
+    %--------------------------OPEN SERIAL PORT------------------------
+
+    fopen(handles.serial);
+
+    %-------------------STYLUS POSITION MARKING SETUP------------------
+    %The following ascii string causes the stylus button to send current
+    %coords. Note: 13 is the ascii code for the required newline character
+    string2write = ['L1,1' 13];
+    fwrite(handles.serial,string2write);
+    %fwrite is used because fprintf sometimes adds extra newline characters
+
+    %set to output in cms
+    string2write = ['U1' 13];
+    fwrite(handles.serial,string2write);
+
+
+    %-----------------Display initial point to find on GUI-------------
+
+    set(handles.infobox,'string',locations(1,1));
+
+    % display locations on table in gui
+    set(handles.coords_table,'Data',locations);
+
+%catch exception if error occurs
+catch serialException
+    disp('COM PORT ERROR OCCURRED: Check COM1 Connection. Baud rate should be 115200')
+    %run close function to close gui and delete serial port objects if
+    %error occurs.
+    CloseFcn(hObject,eventdata,handles);
+    error(message('MATLAB:serial:fopen:opfailed', serialException.message))
+end
+
+%-------------set graph axes labels and properties---------------------
+
+xlabel(handles.coord_plot,'X');
+ylabel(handles.coord_plot,'Y');
+zlabel(handles.coord_plot,'Z');
 
 % Update handles structure
 guidata(hObject, handles);
@@ -708,3 +717,78 @@ else
 end
 % save the newly changed data to the table on the gui
 set(handles.coords_table,'Data',data); 
+
+
+% --- Executes on button press in loadHeadpoints.
+function loadHeadpoints_Callback(hObject, eventdata, handles)
+% hObject    handle to loadHeadpoints (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
+[filename,pathname] = ... 
+    uigetfile({'*.txt;*.dat;*.csv','Text Files (*.txt) (*.dat) (*.csv)'} ...
+    ,'Select Location List File - Each Measurement Point Should be on a New Line');
+
+% user selected cancel...
+if isequal(filename,0)
+    return
+end
+
+% Warn user that this will reset all currently gathered data if any has
+% been collected.
+if(handles.point_count > 0)
+    
+    button = 'No';
+
+    button = questdlg({'Warning! Any existing data will be lost.';...
+        'Do you wish to continue?'},'Warning','Yes','No','modal');
+
+    % user selected cancel...
+    if strcmp(button,'No')
+        return
+    end
+    
+end
+
+disp(['User selected ', fullfile(pathname, filename)])
+
+% Open File
+FileID = fopen([pathname filename]);
+
+% locations is a local variable that holds location data in this
+% function
+locations = textscan(FileID,'%s','delimiter','\n');
+
+% append to list of reference points and convert to string array
+locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
+    locations{1,1}];
+
+% Close file
+fclose(FileID);
+
+% Save locations variable to be loaded next time
+save('savedLocationNames.mat','locations')
+
+% Reset points counter...
+handles.point_count = 0;
+% ...and all points found bool
+handles.all_points_found = false;
+
+% Display initial point to find on GUI
+set(handles.infobox,'string',locations(1,1));
+
+% display locations on table in gui
+set(handles.coords_table,'Data',locations);
+
+% if head align button has been enabled set to disabled.
+if(strcmp(get(handles.HeadAlign,'Enable'),'on'))
+    set(handles.HeadAlign,'Enable','off');
+end
+
+% clear previous measurements and headmap from plot...
+cla(handles.coord_plot);
+% and replot axes.
+axis(handles.coord_plot,'equal');
+
+guidata(hObject,handles)
