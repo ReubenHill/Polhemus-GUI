@@ -3,11 +3,6 @@ function [ COMPort ] = FindPatriotSerial(BaudRate)
 %   The function returns the COM port if successful, otherwise it returns
 %   0;
 
-%show message box
-msgline1 = 'The Polhemus Patriot device will now be looked for on available COM ports...';
-msgline2 = 'Note: existing serial port objects in MATLAB will be deleted if running in MATLAB.';
-msgline3 = 'Press OK to continue';
-uiwait(msgbox(sprintf('%s\n\n%s\n\n%s',msgline1,msgline2,msgline3),'Initialising...','help') );
 disp('Now looking for Polhemus Patriot device...')
 
 %clear any existing serial ports
