@@ -559,8 +559,14 @@ function save_Callback(hObject, eventdata, handles)
 
 % If the chosen save type is .mat then use a standard matlab save command
 if(filterIndex == 2)
+    disp(['Data saving to ' pathName fileName]);
+    
     dataOutput = get(handles.coords_table,'Data');
+    
     save([pathName fileName],'dataOutput');
+    
+    disp('Data is stored in cell array "dataOutput"');
+    
 % Otherwise create a table from the cell array and output that to file.
 elseif(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
     data = get(handles.coords_table,'Data');
@@ -584,6 +590,9 @@ elseif(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
         end
         %Only save data if user presses Yes or Yes has been set previously.
         if(strcmp(buttonPressed,'Yes'))
+            
+            disp(['Data saving to ' pathName fileName]);
+            
             %Mark empty location names as '-'
             data(emptyLocationNames,1) = {'-'};       
 
