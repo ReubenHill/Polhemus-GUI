@@ -173,8 +173,8 @@ handles.all_points_found = false;
 %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
 [filename,pathname] = ... 
     uigetfile({'*.txt;*.dat;*.csv','Text Files (*.txt) (*.dat) (*.csv)'} ...
-              ,'Select Location List File - Each Measurement Point Should be on a New Line');
-
+    ,'Select Location List File - Each Measurement Point Should be on a New Line');
+          
 if isequal(filename,0)
     disp('User selected Cancel')
     %Quit the gui
@@ -183,23 +183,27 @@ if isequal(filename,0)
     return
 end
 
-%load data needed for headpoint plotting
+disp(['User selected ', fullfile(pathname, filename)])
+
+% Open File
+FileID = fopen([pathname filename]);
+
+% locations is a local variable that holds location data in this
+% function
+locations = textscan(FileID,'%s','delimiter','\n');
+
+% append to list of reference points and convert to string array
+locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
+    locations{1,1}];
+
+% Close file
+fclose(FileID);
+
+%load other data needed for headpoint plotting
 handles.AtlasLandmarks = load('refpts_landmarks.mat');
 handles.AtlasLandmarks = handles.AtlasLandmarks.pts;
 handles.mesh = load('scalpSurfaceMesh.mat');
 handles.mesh = handles.mesh.mesh;
-
-disp(['User selected ', fullfile(pathname, filename)])
-
-FileID = fopen([pathname filename]);
-locations = textscan(FileID,'%s','delimiter','\n');
-% locations is a local variable that holds location data in this
-% function
-
-% append to list of reference points and convert to string array
-locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
-                                        locations{1,1}];
-fclose(FileID);
 
 %error test the first serial port functions...
 try 
