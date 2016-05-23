@@ -171,36 +171,44 @@ handles.all_points_found = false;
 
 
 %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
-[filename,pathname] = ... 
-    uigetfile({'*.txt;*.dat;*.csv','Text Files (*.txt) (*.dat) (*.csv)'} ...
-    ,'Select Location List File - Each Measurement Point Should be on a New Line');
-          
-if isequal(filename,0)
-    disp('User selected Cancel')
-    %Quit the gui
-    guidata(hObject, handles);
-    CloseFcn(hObject,eventdata,handles);
-    return
+
+try
+    load('savedLocationNames.mat','locations');
+catch
+    uiwait(warndlg('Could not find previously used location list.',...
+        'Warning','modal'));
+    
+    [filename,pathname] = ... 
+        uigetfile({'*.txt;*.dat;*.csv','Text Files (*.txt) (*.dat) (*.csv)'} ...
+        ,'Select Location List File - Each Measurement Point Should be on a New Line');
+
+    if isequal(filename,0)
+        disp('User selected Cancel')
+        %Quit the gui
+        guidata(hObject, handles);
+        CloseFcn(hObject,eventdata,handles);
+        return
+    end
+
+    disp(['User selected ', fullfile(pathname, filename)])
+
+    % Open File
+    FileID = fopen([pathname filename]);
+
+    % locations is a local variable that holds location data in this
+    % function
+    locations = textscan(FileID,'%s','delimiter','\n');
+
+    % append to list of reference points and convert to string array
+    locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
+        locations{1,1}];
+
+    % Close file
+    fclose(FileID);
+
+    % Save locations variable to be loaded next time
+    save('savedLocationNames.mat','locations')
 end
-
-disp(['User selected ', fullfile(pathname, filename)])
-
-% Open File
-FileID = fopen([pathname filename]);
-
-% locations is a local variable that holds location data in this
-% function
-locations = textscan(FileID,'%s','delimiter','\n');
-
-% append to list of reference points and convert to string array
-locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
-    locations{1,1}];
-
-% Close file
-fclose(FileID);
-
-% Save locations variable to be loaded next time
-save('savedLocationNames.mat','locations')
 
 %load other data needed for headpoint plotting
 handles.AtlasLandmarks = load('refpts_landmarks.mat');
@@ -758,6 +766,9 @@ locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ...
 
 % Close file
 fclose(FileID);
+
+% Save locations variable to be loaded next time
+save('savedLocationNames.mat','locations')
 
 % Reset points counter...
 handles.point_count = 0;
