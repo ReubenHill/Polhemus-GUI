@@ -716,3 +716,68 @@ function loadHeadpoints_Callback(hObject, eventdata, handles)
 % hObject    handle to loadHeadpoints (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+%--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
+[filename,pathname] = ... 
+    uigetfile({'*.txt;*.dat;*.csv','Text Files (*.txt) (*.dat) (*.csv)'} ...
+    ,'Select Location List File - Each Measurement Point Should be on a New Line');
+
+% user selected cancel...
+if isequal(filename,0)
+    return
+end
+
+% Warn user that this will reset all currently gathered data if any has
+% been collected.
+if(handles.point_count > 0)
+    
+    button = 'No';
+
+    button = questdlg({'Warning! Any existing data will be lost.';...
+        'Do you wish to continue?'},'Warning','Yes','No','modal');
+
+    % user selected cancel...
+    if strcmp(button,'No')
+        return
+    end
+    
+end
+
+disp(['User selected ', fullfile(pathname, filename)])
+
+% Open File
+FileID = fopen([pathname filename]);
+
+% locations is a local variable that holds location data in this
+% function
+locations = textscan(FileID,'%s','delimiter','\n');
+
+% append to list of reference points and convert to string array
+locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
+    locations{1,1}];
+
+% Close file
+fclose(FileID);
+
+% Reset points counter...
+handles.point_count = 0;
+% ...and all points found bool
+handles.all_points_found = false;
+
+% Display initial point to find on GUI
+set(handles.infobox,'string',locations(1,1));
+
+% display locations on table in gui
+set(handles.coords_table,'Data',locations);
+
+% if head align button has been enabled set to disabled.
+if(strcmp(get(handles.HeadAlign,'Enable'),'on'))
+    set(handles.HeadAlign,'Enable','off');
+end
+
+% clear previous measurements and headmap from plot...
+cla(handles.coord_plot);
+% and replot axes.
+axis(handles.coord_plot,'equal');
+
+guidata(hObject,handles)
