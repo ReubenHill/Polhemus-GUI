@@ -4,9 +4,9 @@ function [ COMPort ] = FindPatriotSerial(BaudRate)
 %   0;
 
 disp('Now looking for Polhemus Patriot device...')
-disp('Existing serial port objects in MATLAB will be deleted')
 
 %clear any existing serial ports
+disp('Any existing serial port objects in MATLAB being deleted...')
 delete(instrfindall('Type','serial'));
 
 %get all serial ports detected by matlab upon it's opening...
@@ -15,7 +15,7 @@ serialInfo = instrhwinfo('serial');
 %loop through all found serial ports and test comms
 for k = 1:size(serialInfo.AvailableSerialPorts,1)
     try
-        disp(['Now testing port ' serialInfo.AvailableSerialPorts{k,1} ])
+        disp(['Now testing port ' serialInfo.AvailableSerialPorts{k,1} '...' ])
         s = serial(serialInfo.AvailableSerialPorts{k,1},'BaudRate',BaudRate);
         fopen(s);
         %write 'p', which causes stylus coordinates to be returned
@@ -29,7 +29,7 @@ for k = 1:size(serialInfo.AvailableSerialPorts,1)
             %com port of patriot successfully found!    
             COMPort = serialInfo.AvailableSerialPorts{k,1};
             disp( ['Polhemus Patriot device successfully found on ' serialInfo.AvailableSerialPorts{k,1}] )
-            disp('Device returned the following string upon "p" command')
+            disp('Device returned the following string upon "p" command:')
             disp(A);
             return; %return to calling function
         end
