@@ -4,6 +4,7 @@ function [ COMPort ] = FindPatriotSerial(BaudRate)
 %   0;
 
 disp('Now looking for Polhemus Patriot device...')
+disp('Existing serial port objects in MATLAB will be deleted')
 
 %clear any existing serial ports
 delete(instrfindall('Type','serial'));
