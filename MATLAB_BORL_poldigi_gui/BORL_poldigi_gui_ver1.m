@@ -57,7 +57,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 
 % Edit the above text to modify the response to help BORL_poldigi_gui_ver1
 
-% Last Modified by GUIDE v2.5 19-May-2016 13:57:56
+% Last Modified by GUIDE v2.5 23-May-2016 16:29:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -709,3 +709,10 @@ else
 end
 % save the newly changed data to the table on the gui
 set(handles.coords_table,'Data',data); 
+
+
+% --- Executes on button press in loadHeadpoints.
+function loadHeadpoints_Callback(hObject, eventdata, handles)
+% hObject    handle to loadHeadpoints (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
