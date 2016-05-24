@@ -10,6 +10,7 @@ Changelog v1.1.0
 * The last loaded location list is remembered stored in 
   savedLocationNames.mat) and reloaded upon launching of the user 
   interface.
+* Locations lists can be saved from the GUI
 * New location lists can now be imported without restarting the user
   interface by pressing the "Load Locations List" button
 * Data can be outputted in multiple new formats using the new 

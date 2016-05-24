@@ -57,7 +57,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 
 % Edit the above text to modify the response to help BORL_poldigi_gui_ver1
 
-% Last Modified by GUIDE v2.5 24-May-2016 14:34:47
+% Last Modified by GUIDE v2.5 24-May-2016 15:08:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
