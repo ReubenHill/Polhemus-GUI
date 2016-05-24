@@ -847,7 +847,7 @@ cla(handles.coord_plot);
 % and replot axes.
 axis(handles.coord_plot,'equal');
 
-guidata(hObject,handles)
+guidata(hObject,handles);
 
 
 % --- Executes on button press in saveHeadpoints.
