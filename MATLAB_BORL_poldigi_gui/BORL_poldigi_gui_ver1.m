@@ -894,3 +894,29 @@ function measureThisRowButton_Callback(hObject, eventdata, handles)
 % hObject    handle to measureThisRowButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% See if the selectedRow variable exists within the handles struct 
+% (doesn't if no selection performed before clicking or cell has been 
+% deselected)
+if(isfield(handles,'selectedRow'))
+    if(handles.selectedRow(1) <= 5)
+        % Atlas point selected
+        errordlg(['Atlas Points can only be measured in order'...
+            ' and cannot be changed after alignment.'],'Error','modal');
+    elseif(handles.point_count > 5) % ie all atlas points collected
+        % Point selected successfully!
+        % Set point_count such that the selected row will be measured
+        handles.point_count = handles.selectedRow(1)-1;
+    else
+        errordlg(['Please finish gathering atlas points then press '...
+        '"Align Atlas Points" before selecting individual locations to ',...
+        'measure the position of.'],'Error','modal');
+    end
+else
+    % No point selected
+    
+    % Tell user to select a row to measure at
+    errordlg('Please select a row to gather location data.',...
+        'Error','modal');
+end
+guidata(hObject,handles);
