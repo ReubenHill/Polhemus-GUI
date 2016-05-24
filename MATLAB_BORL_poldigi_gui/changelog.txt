@@ -1,0 +1,20 @@
+Changelog v1.1.0
+---
+
+* The location points list made editable from within the user interface
+* Measurements and their location names can be deleted row by row or by 
+  selecting multiple rows from within the user interface
+* new locations can be added using an "insert row" button
+* The "initialising" box now only appears if it is needed to warn that 
+  serial port objects in matlab will be deleted.
+* The last loaded location list is remembered stored in 
+  savedLocationNames.mat) and reloaded upon launching of the user 
+  interface.
+* New location lists can now be imported without restarting the user
+  interface by pressing the "Load Locations List" button
+* Data can be outputted in multiple new formats using the new 
+  "save as..." button:
+ * Comma-delimited text files (*.csv) (*.dat) (*.txt)
+  * (.csv is the default output format)
+ * MAT-file (*.mat)
+ * Excel® spreadsheet files (*.xls) (*.xlsb) (*.xlsm) (*.xlsx)
