@@ -1,23 +1,41 @@
 Changelog v1.1.0
 ---
 
-* The location points list made editable from within the user interface
-* Measurements and their location names can be deleted row by row or by 
-  selecting multiple rows from within the user interface
-* new locations can be added using an "insert row" button
+General:
+
+* The UI is now disabled when looking for the Polhemus Digitiser.
 * The "initialising" box now only appears if it is needed to warn that 
   serial port objects in matlab will be deleted.
+
+Locations Table:
+
+* The location points list made editable from within the user interface.
+* Measurements and their location names can be deleted row by row or by 
+  selecting multiple rows from within the user interface.
+* New locations can be added using an "insert row" button.
+ * A new "Set Row as Location to Measure" button can be used to fill in
+   blank row locations.
 * The last loaded location list is remembered stored in 
   savedLocationNames.mat) and reloaded upon launching of the user 
   interface.
-* Locations lists can be saved from the GUI
+* Locations lists can be saved from the GUI.
 * New location lists can now be imported without restarting the user
-  interface by pressing the "Load Locations List" button
+  interface by pressing the "Import Locations List" button.
+* Edited or created location lists can be exported from the user interface
+  using the "Export Locations List" button.
+* By default the locations list keeps expanding past the last imported 
+  location if the digitiser button is pressed after collecting the final 
+  listed measurement.
+
+Data Output:
+
 * Data can be outputted in multiple new formats using the new 
-  "save as..." button:
+  "Save Data As..." button:
  * Comma-delimited text files (*.csv) (*.dat) (*.txt)
   * (.csv is the default output format)
  * MAT-file (*.mat)
  * Excel® spreadsheet files (*.xls) (*.xlsb) (*.xlsm) (*.xlsx)
+
+Data Display:
+
 * Marker size increased
-* UI Disabled when looking for polhemus
