@@ -57,7 +57,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 
 % Edit the above text to modify the response to help BORL_poldigi_gui_ver1
 
-% Last Modified by GUIDE v2.5 24-May-2016 15:08:00
+% Last Modified by GUIDE v2.5 24-May-2016 15:56:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -878,3 +878,10 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in save dialogue
     clear fileID;
 
 end
+
+
+% --- Executes on button press in measureThisRowButton.
+function measureThisRowButton_Callback(hObject, eventdata, handles)
+% hObject    handle to measureThisRowButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
