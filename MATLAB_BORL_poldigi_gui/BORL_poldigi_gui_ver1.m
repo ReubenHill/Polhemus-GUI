@@ -13,7 +13,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 % point is on a new line.
 %
 % The baud rate is set via the variable "BaudRate" in 
-% BORL_poldigi_gui_ver1_OpeningFcn and has default value 115200.
+% BORL_poldigi_gui_ver1_OutputFcn and has default value 115200.
 %
 % Points are digitised by pressing the stylus button.
 %
@@ -157,9 +157,14 @@ else
     
     %-------------------QUIT & ERROR IF DEVICE NOT FOUND--------------------   
     str1 = 'Polhemus Patriot Device not found or communicated with successfully.';
-    str2 = ['Check the device is on and its baud rate is set to ' sprintf('%i',BaudRate) '.'];
-    str3 = 'If running in MATLAB, try restarting MATLAB to scan for new serial devices.';
-    str4 = 'Also consider turning the device off and on. Take care to give the device time to reinitialise before trying again.';
+    str2 = ['Check the device is on and its baud rate is set to '...
+        sprintf('%i',BaudRate) ... 
+        ' on both the hardware switches of the device and the settings of'...
+        ' any USB link cable used.'];
+    str3 = ['If running in MATLAB, try restarting MATLAB to scan for new'...
+        ' serial devices.'];
+    str4 = ['Also consider turning the device off and on. Take care to'...
+        ' give the device time to reinitialise before trying again.'];
     errstr = sprintf('%s\n\n%s\n\n%s\n\n%s',str1,str2,str3,str4);
     % display error message
     uiwait(errordlg(errstr,'Polhemus Communications Initialisation Error'));
@@ -259,7 +264,7 @@ try
 
 %catch exception if error occurs
 catch serialException
-    disp('COM PORT ERROR OCCURRED: Check COM1 Connection. Baud rate should be 115200')
+    disp('COM PORT ERROR OCCURRED: Check COM Connection.')
     %run close function to close gui and delete serial port objects if
     %error occurs.
     CloseFcn(hObject,eventdata,handles);
