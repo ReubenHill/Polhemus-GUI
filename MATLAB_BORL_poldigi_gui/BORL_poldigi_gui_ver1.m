@@ -593,6 +593,11 @@ function save_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% Find interface objects that are set to 'on' i.e. enabled...
+InterfaceObj=findobj(handles.figure1,'Enable','on');
+% ... and turn them off whilst the com port is found.
+set(InterfaceObj,'Enable','off');
+ 
 % Open a "Save As..." Dialogue with different saving options as shown.
 % The filterIndex gives the index (1, 2 or 3) of the chosen save type.
 [fileName,pathName,filterIndex] = ... 
@@ -604,6 +609,9 @@ function save_Callback(hObject, eventdata, handles)
     '*.xls;*.xlsb;*.xlsm;*.xlsx', ...
     'Excel® spreadsheet files (*.xls) (*.xlsb) (*.xlsm) (*.xlsx)'; ...
     },'Save As...');
+
+% Re-enable the interface objects.
+set(InterfaceObj,'Enable','on');
 
 % If the chosen save type is .mat then use a standard matlab save command
 if(filterIndex == 2)
