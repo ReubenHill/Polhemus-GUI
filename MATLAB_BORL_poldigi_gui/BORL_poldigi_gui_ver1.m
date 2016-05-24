@@ -903,6 +903,11 @@ if(isfield(handles,'selectedRow'))
         % Set point_count such that the selected row will be measured
         handles.point_count = handles.selectedRow-1;
         
+        % Update the "Point to Get" string
+        data = get(handles.coords_table,'Data');
+        set(handles.infobox,'string',...
+                data(handles.selectedRow,1))
+        
     else
         errordlg(['Please finish gathering atlas points then press '...
         '"Align Atlas Points" before selecting individual locations to ',...
