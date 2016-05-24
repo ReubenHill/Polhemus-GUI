@@ -18,3 +18,4 @@ Changelog v1.1.0
   * (.csv is the default output format)
  * MAT-file (*.mat)
  * Excel® spreadsheet files (*.xls) (*.xlsb) (*.xlsm) (*.xlsx)
+* Marker size increased
