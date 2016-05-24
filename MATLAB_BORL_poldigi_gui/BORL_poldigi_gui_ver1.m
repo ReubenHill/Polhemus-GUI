@@ -821,3 +821,35 @@ function saveHeadpoints_Callback(hObject, eventdata, handles)
 % hObject    handle to saveHeadpoints (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+% Find interface objects that are set to 'on' i.e. enabled...
+
+InterfaceObj=findobj(handles.figure1,'Enable','on');
+% ... and turn them off whilst the com port is found.
+set(InterfaceObj,'Enable','off');
+ 
+% Open a "Save As..." Dialogue with different saving options as shown.
+% The filterIndex gives the index (1, 2 or 3) of the chosen save type.
+[fileName,pathName,filterIndex] = ... 
+    uiputfile({'*.txt;*.dat;*.csv','Text Files (*.txt) (*.dat) (*.csv)'} ...
+    ,'Save Location List File ...');
+
+% Re-enable the interface objects.
+set(InterfaceObj,'Enable','on');
+
+% Otherwise create a table from the cell array and output that to file.
+if(filterIndex ~= 0) % if == 0 then user selected "cancel" in save dialogue
+    
+    data = get(handles.coords_table,'Data');
+ 
+    disp(['Locations saving to ' pathName fileName]);
+    
+    fileID = fopen([pathName fileName],'wt');
+    
+    for i = 1:size(data,1)
+        fprintf(fileID,'%s\n',data{i,1});
+    end
+    
+    fclose(fileID);
+    clear fileID;
+
+end
