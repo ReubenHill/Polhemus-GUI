@@ -140,7 +140,16 @@ end
 % Create serial object and set baud rate 
 BaudRate = 115200;
 
+% Find interface objects that are set to 'on' i.e. enabled...
+InterfaceObj=findobj(handles.figure1,'Enable','on');
+% ... and turn them off whilst the com port is found.
+set(InterfaceObj,'Enable','off');
+ 
+% find serial com port
 handles.COMport = FindPatriotSerial(BaudRate);
+ 
+% Re-enable the interface objects.
+set(InterfaceObj,'Enable','on');
 
 if(handles.COMport ~= 0) %patriot found
     handles.serial = serial(handles.COMport,'BaudRate', BaudRate);
