@@ -19,3 +19,4 @@ Changelog v1.1.0
  * MAT-file (*.mat)
  * Excel® spreadsheet files (*.xls) (*.xlsb) (*.xlsm) (*.xlsx)
 * Marker size increased
+* UI Disabled when looking for polhemus
