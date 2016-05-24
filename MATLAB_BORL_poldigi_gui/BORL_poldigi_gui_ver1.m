@@ -57,7 +57,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 
 % Edit the above text to modify the response to help BORL_poldigi_gui_ver1
 
-% Last Modified by GUIDE v2.5 24-May-2016 14:30:55
+% Last Modified by GUIDE v2.5 24-May-2016 14:34:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -814,3 +814,10 @@ cla(handles.coord_plot);
 axis(handles.coord_plot,'equal');
 
 guidata(hObject,handles)
+
+
+% --- Executes on button press in saveHeadpoints.
+function saveHeadpoints_Callback(hObject, eventdata, handles)
+% hObject    handle to saveHeadpoints (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
