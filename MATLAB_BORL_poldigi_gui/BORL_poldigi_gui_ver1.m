@@ -569,6 +569,10 @@ if (handles.point_count ~= 0)
         % has just been deleted
         handles.point_count = handles.point_count - 1;
         
+        % update next point to look for string
+        set(handles.infobox,'string',...
+                handles.coords_table.Data(handles.point_count+1,1))
+        
         % Update the all points collected bool if set to true
         if(handles.all_points_found)
             handles.all_points_found = false;
