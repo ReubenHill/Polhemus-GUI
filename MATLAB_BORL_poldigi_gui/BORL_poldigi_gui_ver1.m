@@ -886,14 +886,23 @@ function measureThisRowButton_Callback(hObject, eventdata, handles)
 % (doesn't if no selection performed before clicking or cell has been 
 % deselected)
 if(isfield(handles,'selectedRow'))
-    if(handles.selectedRow(1) <= 5)
+    
+    if(length(handles.selectedRow) > 1)
+        % Multiple rows/row elements selected
+        errordlg({'Multiple rows or row elements have been selected.';...
+            'Please select only a single row element.'},'Error','modal');  
+    elseif(handles.selectedRow <= 5)
         % Atlas point selected
         errordlg(['Atlas Points can only be measured in order'...
-            ' and cannot be changed after alignment.'],'Error','modal');
-    elseif(handles.point_count > 5) % ie all atlas points collected
+            ' and cannot be changed after alignment.'],'Error','modal');  
+    elseif(handles.point_count >= 5 && ...
+            strcmp(get(handles.HeadAlign,'Enable'),'off')) 
+            % (ie all atlas points collected and headalign clicked.)
         % Point selected successfully!
+        
         % Set point_count such that the selected row will be measured
-        handles.point_count = handles.selectedRow(1)-1;
+        handles.point_count = handles.selectedRow-1;
+        
     else
         errordlg(['Please finish gathering atlas points then press '...
         '"Align Atlas Points" before selecting individual locations to ',...
