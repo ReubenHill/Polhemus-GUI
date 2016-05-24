@@ -184,8 +184,6 @@ end
 % measured head point until the last head point is measured.
 handles.point_count = 0;
 
-handles.all_points_found = false;
-
 
 %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
 
@@ -469,79 +467,75 @@ function ReadCoordsCallback(s,BytesAvailable,handles)
 % Update handles structure to most current version
 handles = guidata(handles.figure1);
 
-%don't run most of the callback if all points have been found..
-if(~handles.all_points_found)
-    
-    %don't run most of the callback if waiting to do alignment...
-    if(handles.point_count < 5 || strcmp(get(handles.HeadAlign,'Enable'),'off') )
+   
+%don't run most of the callback if waiting to do alignment...
+if(handles.point_count < 5 || strcmp(get(handles.HeadAlign,'Enable'),'off') )
 
-        %increment the point count before measurement
-        handles.point_count = handles.point_count + 1;
+    %increment the point count before measurement
+    handles.point_count = handles.point_count + 1;
 
-        %read the data on the serial port that triggered the callback
-        data_str=fgetl(s);
+    %read the data on the serial port that triggered the callback
+    data_str=fgetl(s);
 
-        data_num=str2num(data_str);
+    data_num=str2num(data_str);
 
-        % Format of data obtained for the current settings
-        % 1 2 3 4 5 6 7
-        % 1 Detector Number (should be 1 for 1 stylus)
-        % 2 X position in cms
-        % 3 Y position in cms
-        % 4 Z position in cms
-        % 5 Azimuth of stylus in degrees
-        % 6 Elevation of stylus in degrees
-        % 7 Roll of stylus degrees
-       
-        % extract coords
-        Coords = data_num(1,2:4);
+    % Format of data obtained for the current settings
+    % 1 2 3 4 5 6 7
+    % 1 Detector Number (should be 1 for 1 stylus)
+    % 2 X position in cms
+    % 3 Y position in cms
+    % 4 Z position in cms
+    % 5 Azimuth of stylus in degrees
+    % 6 Elevation of stylus in degrees
+    % 7 Roll of stylus degrees
 
-        % disable head alignment butten for first five points (they are the
-        % landmark positions)
-        if(handles.point_count < 5)
-            set(handles.HeadAlign,'Enable','off');
-        % enable head allign after 5 points...
-        elseif(handles.point_count == 5)
-            set(handles.HeadAlign,'Enable','on');
-        % Do coord transform on points measured after landmark points
-        else 
-            Coords = Coords + handles.TransformVector;
-            Coords = Coords*handles.TransformMatrix';
-        end
+    % extract coords
+    Coords = data_num(1,2:4);
 
-        % Update table with newly measured x y and z values
-        handles.coords_table.Data(handles.point_count,2:4) = ...
-            num2cell(Coords);
-        
-        % update point to look for (unless at end of list as given by the
-        % length of handles.coords_table.Data - ie the number of headpoints)
-        if( handles.point_count < size(handles.coords_table.Data,1) )
-            set(handles.infobox,'string',...
-                handles.coords_table.Data(handles.point_count+1,1));
-                % (Set to the next position on the table)
-        else
-            set(handles.infobox,'string','All points Collected!');
-            handles.all_points_found = true;
-        end  
-
-        %add the measured point to the 3d graph
-        hold(handles.coord_plot,'on');
-        %save the handle of the point so it can be removed later...
-        if(handles.point_count <= 5)
-            handles.pointhandle(handles.point_count) = plot3(Coords(1), ...
-                                                Coords(2),Coords(3), ...
-                                                'm.', 'MarkerSize', 30, ...
-                                                'Parent' , handles.coord_plot);
-        else %Note: above marker points are plotted differently
-            handles.pointhandle(handles.point_count) = plot3(Coords(1), ...
-                                                Coords(2),Coords(3), ... 
-                                               'b.', 'MarkerSize', 30, ...
-                                               'Parent',handles.coord_plot);
-        end
-        hold(handles.coord_plot,'off'); 
-        %replot axes...
-        axis(handles.coord_plot,'equal');
+    % disable head alignment butten for first five points (they are the
+    % landmark positions)
+    if(handles.point_count < 5)
+        set(handles.HeadAlign,'Enable','off');
+    % enable head allign after 5 points...
+    elseif(handles.point_count == 5)
+        set(handles.HeadAlign,'Enable','on');
+    % Do coord transform on points measured after landmark points
+    else 
+        Coords = Coords + handles.TransformVector;
+        Coords = Coords*handles.TransformMatrix';
     end
+
+    % Update table with newly measured x y and z values
+    handles.coords_table.Data(handles.point_count,2:4) = ...
+        num2cell(Coords);
+
+    % update point to look for (unless at end of list as given by the
+    % length of handles.coords_table.Data - ie the number of headpoints)
+    if( handles.point_count < size(handles.coords_table.Data,1) )
+        set(handles.infobox,'string',...
+            handles.coords_table.Data(handles.point_count+1,1));
+            % (Set to the next position on the table)
+    else
+        set(handles.infobox,'string','End of locations list reached');
+    end  
+
+    %add the measured point to the 3d graph
+    hold(handles.coord_plot,'on');
+    %save the handle of the point so it can be removed later...
+    if(handles.point_count <= 5)
+        handles.pointhandle(handles.point_count) = plot3(Coords(1), ...
+                                            Coords(2),Coords(3), ...
+                                            'm.', 'MarkerSize', 30, ...
+                                            'Parent' , handles.coord_plot);
+    else %Note: above marker points are plotted differently
+        handles.pointhandle(handles.point_count) = plot3(Coords(1), ...
+                                            Coords(2),Coords(3), ... 
+                                           'b.', 'MarkerSize', 30, ...
+                                           'Parent',handles.coord_plot);
+    end
+    hold(handles.coord_plot,'off'); 
+    %replot axes...
+    axis(handles.coord_plot,'equal');
 end
 
 % Update handles structure
@@ -576,11 +570,6 @@ if (handles.point_count ~= 0)
         set(handles.infobox,'string',...
                 handles.coords_table.Data(handles.point_count+1,1))
         
-        % Update the all points collected bool if set to true
-        if(handles.all_points_found)
-            handles.all_points_found = false;
-        end
-
         % Disable align if now not enough points
         if(handles.point_count <= 5)
             set(handles.HeadAlign,'Enable','off');
@@ -826,10 +815,8 @@ fclose(FileID);
 % Save locations variable to be loaded next time
 save('savedLocationNames.mat','locations')
 
-% Reset points counter...
+% Reset points counter
 handles.point_count = 0;
-% ...and all points found bool
-handles.all_points_found = false;
 
 % Display initial point to find on GUI
 set(handles.infobox,'string',locations(1,1));
