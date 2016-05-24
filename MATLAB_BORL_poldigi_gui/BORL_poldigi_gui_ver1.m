@@ -681,7 +681,7 @@ else
     % extract the row from where the user clicked on the table.
     handles.selectedRow = eventdata.Indices(:,1);
 end
-guidata(hObject,handles)
+guidata(hObject,handles);
 
 
 
@@ -707,7 +707,14 @@ if(isfield(handles,'selectedRow'))
         data(row+1,:) = cell(1,size(data,2));
         % add back the data that was saved before by concatenating below where
         % the new row has been added.
-        data = [data(1:row+1,:) ; dataBelowSelectedRow];  
+        data = [data(1:row+1,:) ; dataBelowSelectedRow]; 
+        
+        % check if have added row within where measurement has already been 
+        % made
+        if(handles.selectedRow(end) < handles.point_count)
+            % increment point count to account for 1 extra point
+            handles.point_count = handles.point_count + 1;
+        end
     end    
 else
 %    % insert empty row at the end
@@ -717,7 +724,8 @@ else
     errordlg('Please select a row to insert below.','Insert Error','modal');   
 end
 % save the newly changed data to the table on the gui
-set(handles.coords_table,'Data',data); 
+set(handles.coords_table,'Data',data);
+guidata(hObject,handles);
 
 % --- Executes on button press in DeleteRowPushbutton.
 function DeleteRowPushbutton_Callback(hObject, eventdata, handles)
@@ -736,6 +744,17 @@ if(isfield(handles,'selectedRow'))
     else
         % delete selected row...
         data(handles.selectedRow,:) = [];
+        
+        % check if have deleted row where measurement has already been made
+        if(handles.selectedRow < handles.point_count)
+            % decrement point count to account for 1 fewer point
+            handles.point_count = handles.point_count - 1;
+            
+            % Remove point from graph...
+            delete(handles.pointhandle(handles.point_count));
+            % and replot axes.
+            axis(handles.coord_plot,'equal');
+        end
     end    
 else
     % Tell user to select a row before inserting
@@ -743,6 +762,8 @@ else
 end
 % save the newly changed data to the table on the gui
 set(handles.coords_table,'Data',data); 
+
+guidata(hObject,handles);
 
 
 % --- Executes on button press in loadHeadpoints.
