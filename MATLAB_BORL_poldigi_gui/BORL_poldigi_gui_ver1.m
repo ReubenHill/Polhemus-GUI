@@ -745,13 +745,19 @@ if(isfield(handles,'selectedRow'))
     if(handles.selectedRow(1) <= 5)
         errordlg('Cannot insert or delete Atlas Points','Error','modal');
     else
-        % delete selected row...
+        % delete selected rows...
         data(handles.selectedRow,:) = [];
         
-        % check if have deleted row where measurement has already been made
-        if(handles.selectedRow < handles.point_count)
-            % decrement point count to account for 1 fewer point
-            handles.point_count = handles.point_count - 1;
+        % check if have deleted any rows where measurements have already 
+        % been made
+        if(any(handles.selectedRow <= handles.point_count))
+            
+            % find out how many of the selected rows are less than the
+            % current point_count
+            numToDecrement = nnz(handles.selectedRow <= handles.point_count);
+            
+            % decrement point count to account for number of fewer points
+            handles.point_count = handles.point_count - numToDecrement;
             
             % Remove point from graph...
             delete(handles.pointhandle(handles.point_count));
