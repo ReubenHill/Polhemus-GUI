@@ -112,6 +112,9 @@ function varargout = BORL_poldigi_gui_ver1_OutputFcn(hObject, eventdata, handles
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
+%-------------------DISABLE HEAD ALIGNMENT BUTTON----------------------
+set(handles.HeadAlign,'Enable','off');
+
 %-------------------CHECK FOR EXISTING SERIAL OBJECT----------------------
 
 % Look for any existing serial port objects and warn user they may be
