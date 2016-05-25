@@ -145,7 +145,7 @@ BaudRate = 115200;
 
 % Find interface objects that are set to 'on' i.e. enabled...
 InterfaceObj=findobj(handles.figure1,'Enable','on');
-% ... and turn them off whilst the com port is found.
+% ... and turn them off.
 set(InterfaceObj,'Enable','off');
  
 % find serial com port
@@ -183,6 +183,9 @@ end
 % Set the initial point count to 0. This is incremented before each
 % measured head point until the last head point is measured.
 handles.point_count = 0;
+
+% this is true when opening save dialogues for example
+handles.disable_measurements = false;
 
 
 %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
@@ -471,8 +474,13 @@ handles = guidata(handles.figure1);
 data_str=fgetl(s);
    
 %don't run most of the callback if waiting to do alignment...
-if(handles.point_count < 5 || strcmp(get(handles.HeadAlign,'Enable'),'off') )
-
+if(handles.point_count == 5 && ... 
+        strcmp(get(handles.HeadAlign,'Enable'),'on') && ...
+        handles.disable_measurements == false)
+    % Warn user that points aren't collected until alignment done
+    warndlg('Atlas points must be aligned before continuing.',...
+        'Measurement Issue...','replace');
+elseif(handles.disable_measurements == false)
     %increment the point count before measurement
     handles.point_count = handles.point_count + 1;
     
@@ -588,11 +596,15 @@ function save_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% disable measurements
+handles.disable_measurements = true;
+guidata(hObject,handles);
+
 % Find interface objects that are set to 'on' i.e. enabled...
 InterfaceObj=findobj(handles.figure1,'Enable','on');
-% ... and turn them off whilst the com port is found.
+% ... and turn them off.
 set(InterfaceObj,'Enable','off');
- 
+
 % Open a "Save As..." Dialogue with different saving options as shown.
 % The filterIndex gives the index (1, 2 or 3) of the chosen save type.
 [fileName,pathName,filterIndex] = ... 
@@ -607,6 +619,10 @@ set(InterfaceObj,'Enable','off');
 
 % Re-enable the interface objects.
 set(InterfaceObj,'Enable','on');
+
+% re-enable measurements
+handles.disable_measurements = false;
+guidata(hObject,handles);
 
 % If the chosen save type is .mat then use a standard matlab save command
 if(filterIndex == 2)
@@ -655,6 +671,8 @@ elseif(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
         end
     end
 end
+
+guidata(hObject,handles);
 
 
 % --- Executes when selected cell(s) is changed in coords_table.
@@ -769,10 +787,26 @@ function ImportHeadpoints_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% disable measurements
+handles.disable_measurements = true;
+guidata(hObject,handles);
+
+% Find interface objects that are set to 'on' i.e. enabled...
+InterfaceObj=findobj(handles.figure1,'Enable','on');
+% ... and turn them off.
+set(InterfaceObj,'Enable','off');
+
 %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
 [filename,pathname] = ... 
     uigetfile({'*.txt;*.dat;*.csv','Text Files (*.txt) (*.dat) (*.csv)'} ...
     ,'Select Location List File - Each Measurement Point Should be on a New Line');
+
+% Re-enable the interface objects.
+set(InterfaceObj,'Enable','on');
+
+% re-enable measurements
+handles.disable_measurements = false;
+guidata(hObject,handles);
 
 % user selected cancel...
 if isequal(filename,0)
@@ -843,8 +877,13 @@ function ExportHeadpoints_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 % Find interface objects that are set to 'on' i.e. enabled...
 
+% disable measurements
+handles.disable_measurements = true;
+guidata(hObject,handles);
+
+% Find interface objects that are set to 'on' i.e. enabled...
 InterfaceObj=findobj(handles.figure1,'Enable','on');
-% ... and turn them off whilst the com port is found.
+% ... and turn them off.
 set(InterfaceObj,'Enable','off');
  
 % Open a "Save As..." Dialogue with different saving options as shown.
@@ -855,6 +894,10 @@ set(InterfaceObj,'Enable','off');
 
 % Re-enable the interface objects.
 set(InterfaceObj,'Enable','on');
+
+% re-enable measurements
+handles.disable_measurements = false;
+guidata(hObject,handles);
 
 % Otherwise create a table from the cell array and output that to file.
 if(filterIndex ~= 0) % if == 0 then user selected "cancel" in save dialogue
@@ -873,6 +916,8 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in save dialogue
     clear fileID;
 
 end
+
+guidata(hObject,handles);
 
 
 % --- Executes on button press in measureThisRowButton.
