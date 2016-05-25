@@ -624,51 +624,56 @@ set(InterfaceObj,'Enable','on');
 handles.disable_measurements = false;
 guidata(hObject,handles);
 
-% If the chosen save type is .mat then use a standard matlab save command
-if(filterIndex == 2)
-    disp(['Data saving to ' pathName fileName]);
+if(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
+        
+    % If the chosen save type is .mat then use a standard matlab save command
+    if(filterIndex == 2)
+        disp(['Data saving to ' pathName fileName]);
+        dataOutput = get(handles.coords_table,'Data');
+        save([pathName fileName],'dataOutput');
+        disp('Data is stored in cell array "dataOutput"');
     
-    dataOutput = get(handles.coords_table,'Data');
-    
-    save([pathName fileName],'dataOutput');
-    
-    disp('Data is stored in cell array "dataOutput"');
-    
-% Otherwise create a table from the cell array and output that to file.
-elseif(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
-    data = get(handles.coords_table,'Data');
-    
-    % check data cell array has same number of columns as there are column
-    % names.
-    if(size(data,2) < length(get(handles.coords_table,'ColumnName')))
-        % dont save table if not enough data is available
-        errordlg('Cannot save without recorded location data.', ... 
-            'Save Error','modal');
+    % Otherwise create a table from the cell array and output that to file.    
     else
-        % find any empty cells in Locations data
-        emptyLocationNames = cellfun('isempty',data(:,1));
-        buttonPressed = 'Yes';
-        if(any(emptyLocationNames))
-            % Warn the user if there are any location names missing...
-            buttonPressed = questdlg({'Some location names are unspecified.';
-                                      'Missing location names will be replaced by the symbol "-".';...
-                                      'Would you like to continue?'},...
-                                      'Warning','Yes','No','modal'); 
-        end
-        %Only save data if user presses Yes or Yes has been set previously.
-        if(strcmp(buttonPressed,'Yes'))
-            
-            disp(['Data saving to ' pathName fileName]);
-            
-            %Mark empty location names as '-'
-            data(emptyLocationNames,1) = {'-'};       
+        
+        data = get(handles.coords_table,'Data');
 
-            tableToOutput = cell2table(data,'VariableNames', ...
-                                       get(handles.coords_table,'ColumnName'));
-            % Note that writetable changes its output depending on the fileName
-            % type.
-            writetable(tableToOutput,[pathName fileName]);
+        % check data cell array has same number of columns as there are column
+        % names...
+        if(size(data,2) < length(get(handles.coords_table,'ColumnName')))
+            
+            % dont save table if not enough data is available
+            errordlg('Cannot save without recorded location data.', ... 
+                'Save Error','modal');
+            
+        % ... continue if it does
+        else
+            % find any empty cells in Locations data
+            emptyLocationNames = cellfun('isempty',data(:,1));
+            buttonPressed = 'Yes';
+            if(any(emptyLocationNames))
+                % Warn the user if there are any location names missing...
+                buttonPressed = questdlg({'Some location names are unspecified.';
+                                          'Missing location names will be replaced by the symbol "-".';...
+                                          'Would you like to continue?'},...
+                                          'Warning','Yes','No','modal'); 
+            end
+            %Only save data if user presses Yes or Yes has been set previously.
+            if(strcmp(buttonPressed,'Yes'))
+
+                disp(['Data saving to ' pathName fileName]);
+
+                %Mark empty location names as '-'
+                data(emptyLocationNames,1) = {'-'};       
+
+                tableToOutput = cell2table(data,'VariableNames', ...
+                                           get(handles.coords_table,'ColumnName'));
+                % Note that writetable changes its output depending on the fileName
+                % type.
+                writetable(tableToOutput,[pathName fileName]);
+            end
         end
+        
     end
 end
 
