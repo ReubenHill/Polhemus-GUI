@@ -467,16 +467,15 @@ function ReadCoordsCallback(s,BytesAvailable,handles)
 % Update handles structure to most current version
 handles = guidata(handles.figure1);
 
+%read the data on the serial port that triggered the callback
+data_str=fgetl(s);
    
 %don't run most of the callback if waiting to do alignment...
 if(handles.point_count < 5 || strcmp(get(handles.HeadAlign,'Enable'),'off') )
 
     %increment the point count before measurement
     handles.point_count = handles.point_count + 1;
-
-    %read the data on the serial port that triggered the callback
-    data_str=fgetl(s);
-
+    
     data_num=str2num(data_str);
 
     % Format of data obtained for the current settings
