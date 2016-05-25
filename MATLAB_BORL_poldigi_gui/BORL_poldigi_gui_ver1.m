@@ -967,3 +967,38 @@ else
         'Selection Error','modal');
 end
 guidata(hObject,handles);
+
+
+% --- Executes when entered data in editable cell(s) in coords_table.
+function coords_table_CellEditCallback(hObject, eventdata, handles)
+% hObject    handle to coords_table (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+%	Indices: row and column indices of the cell(s) edited
+%	PreviousData: previous data for the cell(s) edited
+%	EditData: string(s) entered by the user
+%	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
+%	Error: error string when failed to convert EditData to appropriate value for Data
+% handles    structure with handles and user data (see GUIDATA)
+
+% Extract selected row
+selectedRow = eventdata.Indices(:,1);
+
+% warn when editing of rows less than 5 (atlas points)
+if(selectedRow <= 5)
+        
+    % Check that user is happy to continue
+    button = 'Yes';
+    button = questdlg({['Warning! About to rename Atlas Point "' ...
+        eventdata.PreviousData, '" to "', eventdata.NewData, '".']; ...
+        'Do you wish to continue?'} ...
+        ,'Rename Warning','Yes','No','modal');
+    
+    % Set name to previous name prior to editing if user selects "no"
+    if(strcmp(button,'No'))
+        data = get(handles.coords_table,'Data');
+        data{selectedRow,1} = eventdata.PreviousData;
+        set(handles.coords_table,'Data',data);
+    end
+    
+end
+    
