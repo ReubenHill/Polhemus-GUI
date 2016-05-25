@@ -57,7 +57,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 
 % Edit the above text to modify the response to help BORL_poldigi_gui_ver1
 
-% Last Modified by GUIDE v2.5 24-May-2016 18:22:55
+% Last Modified by GUIDE v2.5 25-May-2016 16:03:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -194,7 +194,7 @@ try
     load('savedLocationNames.mat','locations');
 catch
     uiwait(warndlg('Could not find previously used location list.',...
-        'Warning','modal'));
+        'Location Warning','modal'));
     
     [filename,pathname] = ... 
         uigetfile({'*.txt;*.dat;*.csv','Text Files (*.txt) (*.dat) (*.csv)'} ...
@@ -749,7 +749,7 @@ data = get(handles.coords_table,'Data');
 % deselected)
 if(isfield(handles,'selectedRow'))
     if(handles.selectedRow(1) <= 5)
-        errordlg('Cannot insert or delete Atlas Points','Error','modal');
+        errordlg('Cannot insert or delete Atlas Points','Edit Error','modal');
     else
         % delete selected rows...
         data(handles.selectedRow,:) = [];
@@ -820,7 +820,7 @@ if(handles.point_count > 0)
     button = 'No';
 
     button = questdlg({'Warning! Any existing data will be lost.';...
-        'Do you wish to continue?'},'Warning','Yes','No','modal');
+        'Do you wish to continue?'},'Data Warning','Yes','No','modal');
 
     % user selected cancel...
     if strcmp(button,'No')
@@ -934,11 +934,13 @@ if(isfield(handles,'selectedRow'))
     if(length(handles.selectedRow) > 1)
         % Multiple rows/row elements selected
         errordlg({'Multiple rows or row elements have been selected.';...
-            'Please select only a single row element.'},'Error','modal');  
+            'Please select only a single row element.'},...
+            'Selection Error','modal');  
     elseif(handles.selectedRow <= 5)
         % Atlas point selected
         errordlg(['Atlas Points can only be measured in order'...
-            ' and cannot be changed after alignment.'],'Error','modal');  
+            ' and cannot be changed after alignment.'],...
+            'Selection Error','modal');  
     elseif(handles.point_count >= 5 && ...
             strcmp(get(handles.HeadAlign,'Enable'),'off')) 
             % (ie all atlas points collected and headalign clicked.)
@@ -955,13 +957,13 @@ if(isfield(handles,'selectedRow'))
     else
         errordlg(['Please finish gathering atlas points then press '...
         '"Align Atlas Points" before selecting individual locations to ',...
-        'measure the position of.'],'Error','modal');
+        'measure the position of.'],'Selection Error','modal');
     end
 else
     % No point selected
     
     % Tell user to select a row to measure at
     errordlg('Please select a row to gather location data.',...
-        'Error','modal');
+        'Selection Error','modal');
 end
 guidata(hObject,handles);
