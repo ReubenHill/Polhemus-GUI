@@ -479,7 +479,7 @@ if(handles.point_count == 5 && ...
         handles.disable_measurements == false)
     % Warn user that points aren't collected until alignment done
     warndlg('Atlas points must be aligned before continuing.',...
-        'Measurement Issue...','replace');
+        'Measurement Issue...','modal');
 elseif(handles.disable_measurements == false)
     %increment the point count before measurement
     handles.point_count = handles.point_count + 1;
