@@ -675,6 +675,17 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
         end
         
     end
+    
+    % check if user wants to save locations list too
+    button = 'No';
+    button = questdlg(['Would you also like to export your current '...
+        'locations list?'],'Export?','Yes','No','modal');
+    if(strcmp(button,'Yes'))
+        % Call the export headpoints callback
+        handles = guidata(handles.figure1);
+        ExportHeadpoints_Callback(hObject, eventdata, handles);
+    end
+    
 end
 
 guidata(hObject,handles);
