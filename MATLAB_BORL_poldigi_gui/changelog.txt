@@ -6,6 +6,8 @@ General:
 * The UI is now disabled when looking for the Polhemus Digitiser.
 * The "initialising" box now only appears if it is needed to warn that 
   serial port objects in matlab will be deleted.
+* Various bug fixes
+* Various warnings to inform the user and avoid potential pitfalls
 
 Locations Table:
 
