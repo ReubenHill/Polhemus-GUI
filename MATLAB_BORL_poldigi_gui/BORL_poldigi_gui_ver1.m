@@ -745,6 +745,10 @@ if(isfield(handles,'selectedRow'))
             % increment point count to account for 1 extra point
             handles.point_count = handles.point_count + 1;
         end
+        
+        % Locations list has now been edited so change bool.
+        handles.editedLocationsList = true;
+        
     end    
 else
 %    % insert empty row at the end
@@ -774,6 +778,9 @@ if(isfield(handles,'selectedRow'))
     else
         % delete selected rows...
         data(handles.selectedRow,:) = [];
+        
+        % Locations list has now been edited so change bool.
+        handles.editedLocationsList = true;
         
         % check if have deleted any rows where measurements have already 
         % been made
@@ -887,6 +894,11 @@ end
 cla(handles.coord_plot);
 % and replot axes.
 axis(handles.coord_plot,'equal');
+
+% Locations list is now unedited (since it's just been imported) so reset
+% both bools that deal with whether bits of the location list are edited.
+handles.editedLocationsList = false;
+handles.editedAtlasPoints = false;
 
 guidata(hObject,handles);
 
@@ -1004,13 +1016,19 @@ function coords_table_CellEditCallback(hObject, eventdata, handles)
 % Extract selected row
 selectedRow = eventdata.Indices(:,1);
 
+% Extract previous and new data (the eventdata fields are read only hence
+% writing them to a new variable).
+NewData = eventdata.NewData;
+PreviousData = eventdata.PreviousData;
+
 % warn when editing of rows less than 5 (atlas points)
 if(selectedRow <= 5)
         
     % Check that user is happy to continue
     button = 'Yes';
     button = questdlg({['Warning! About to rename Atlas Point "' ...
-        eventdata.PreviousData, '" to "', eventdata.NewData, '".']; ...
+        PreviousData, '" to "', NewData, '".']; ...
+        'Any changes will NOT be reflected in Exported Locations files.';
         'Do you wish to continue?'} ...
         ,'Rename Warning','Yes','No','No');
     
@@ -1019,7 +1037,17 @@ if(selectedRow <= 5)
         data = get(handles.coords_table,'Data');
         data{selectedRow,1} = eventdata.PreviousData;
         set(handles.coords_table,'Data',data);
+        NewData = PreviousData;
+    else
+        % Atlas points have been edited so update bool.
+        handles.editedAtlasPoints = true;
     end
     
 end
-    
+% if the previous and the new data are different set editedLocationsList to
+% true.
+if(~strcmp(PreviousData,NewData))
+    handles.editedLocationsList = true;
+end
+
+guidata(hObject,handles);
