@@ -187,6 +187,10 @@ handles.point_count = 0;
 % this is true when opening save dialogues for example
 handles.disable_measurements = false;
 
+% this is true if the locations list has been edited.
+handles.editedLocationsList = false;
+% this is true if the atlas point names has been edited.
+handles.editedAtlasPoints = false;
 
 %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
 
