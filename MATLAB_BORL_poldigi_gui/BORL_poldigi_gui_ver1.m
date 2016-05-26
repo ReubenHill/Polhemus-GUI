@@ -127,7 +127,7 @@ if(~isempty(instrfindall))
     msgline3 = 'Press OK to continue';
     msg = sprintf('%s\n\n%s\n\n%s',msgline1,msgline2,msgline3);
     disp(msgline2);
-    button = questdlg(msg,'Initialising...','OK','Cancel','modal');
+    button = questdlg(msg,'Initialising...','OK','Cancel','OK');
 end
 
 if(~strcmp(button,'OK'))
@@ -659,7 +659,7 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
             buttonPressed = questdlg({'Some location names are unspecified.';
                                       'Missing location names will be replaced by the symbol "-".';...
                                       'Would you like to continue?'},...
-                                      'Warning','Yes','No','modal'); 
+                                      'Warning','Yes','No','Yes'); 
         end
 
         %Only save data if user presses Yes or Yes has been set previously.
@@ -837,7 +837,7 @@ if(handles.point_count > 0)
     button = 'No';
 
     button = questdlg({'Warning! Any existing data will be lost.';...
-        'Do you wish to continue?'},'Data Warning','Yes','No','modal');
+        'Do you wish to continue?'},'Data Warning','Yes','No','No');
 
     % user selected cancel...
     if strcmp(button,'No')
@@ -1008,7 +1008,7 @@ if(selectedRow <= 5)
     button = questdlg({['Warning! About to rename Atlas Point "' ...
         eventdata.PreviousData, '" to "', eventdata.NewData, '".']; ...
         'Do you wish to continue?'} ...
-        ,'Rename Warning','Yes','No','modal');
+        ,'Rename Warning','Yes','No','No');
     
     % Set name to previous name prior to editing if user selects "no"
     if(strcmp(button,'No'))
