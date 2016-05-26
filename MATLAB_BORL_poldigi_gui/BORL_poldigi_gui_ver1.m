@@ -1035,7 +1035,7 @@ if(selectedRow <= 5)
     % Set name to previous name prior to editing if user selects "no"
     if(strcmp(button,'No'))
         data = get(handles.coords_table,'Data');
-        data{selectedRow,1} = eventdata.PreviousData;
+        data{selectedRow,1} = PreviousData;
         set(handles.coords_table,'Data',data);
         NewData = PreviousData;
     else
