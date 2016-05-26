@@ -8,6 +8,7 @@ General:
   serial port objects in matlab will be deleted.
 * Various bug fixes
 * Various warnings to inform the user and avoid potential pitfalls
+* Tooltips added
 
 Locations Table:
 
