@@ -942,16 +942,27 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in save dialogue
     
     data = get(handles.coords_table,'Data');
  
-    disp(['Locations saving to ' pathName fileName]);
+    % error if outputting only atlas points 
+    if(size(data,1) <= 5)
+        errordlg({'Cannot export locations:';...
+            'Only atlas point locations have been found.';...
+            'Atlas points alone cannot be exported.'},...
+            'Export Error','modal');
+    else
+       
+        disp(['Locations saving to ' pathName fileName]);
+
+        fileID = fopen([pathName fileName],'wt');
+
+        %write from the 6th to the last data point
+        for i = 5+1:size(data,1)
+            fprintf(fileID,'%s\n',data{i,1});
+        end
+
+        fclose(fileID);
+        clear fileID;
     
-    fileID = fopen([pathName fileName],'wt');
-    
-    for i = 1:size(data,1)
-        fprintf(fileID,'%s\n',data{i,1});
     end
-    
-    fclose(fileID);
-    clear fileID;
 
 end
 
