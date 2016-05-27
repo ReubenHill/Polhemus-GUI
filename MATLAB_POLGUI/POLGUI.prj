@@ -1,11 +1,11 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="2731918059" file="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI.prj" location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI" name="POLGUI" preferred-package-location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="2364895092" file="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI.prj" location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI" name="POLGUI" preferred-package-location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>POLGUI</param.appname>
     <param.icon />
     <param.icons />
     <param.version>1.1</param.version>
     <param.authnamewatermark>Reuben Hill</param.authnamewatermark>
-    <param.email>reuben.hill@ucl.ac.uk</param.email>
+    <param.email>reuben@gowerlabs.co.uk</param.email>
     <param.company>Gowerlabs</param.company>
     <param.summary />
     <param.description>A graphical user interface for use with the Polhemus Patriot Digitiser at a baud rate of 115200.</param.description>
@@ -68,11 +68,11 @@
       <file>${PROJECT_ROOT}\POLGUI.m</file>
     </fileset.main>
     <fileset.resources>
-      <file>${PROJECT_ROOT}\Locations Example.txt</file>
       <file>${PROJECT_ROOT}\refpts_landmarks.mat</file>
       <file>${PROJECT_ROOT}\scalpSurfaceMesh.mat</file>
     </fileset.resources>
     <fileset.package>
+      <file>${PROJECT_ROOT}\Locations Example.txt</file>
       <file>${PROJECT_ROOT}\Readme.txt</file>
     </fileset.package>
     <fileset.depfun>
