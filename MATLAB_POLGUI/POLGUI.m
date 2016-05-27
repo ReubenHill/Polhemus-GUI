@@ -516,9 +516,22 @@ elseif(handles.disable_measurements == false)
         Coords = Coords*handles.TransformMatrix';
     end
 
+    % Extract previous data from table
+    data = get(handles.coords_table,'Data');
+    
+    % Check if table is currently full - if it is then adding a new point
+    % will expand the table...
+    if(handles.point_count > size(data,1))
+        % ... so update the bool that tracks if location names have been 
+        % edited. When the user saves their data they will therefore be
+        % prompted to save the locations list too.
+        handles.editedLocationsList = true;
+    end
+    
     % Update table with newly measured x y and z values
-    handles.coords_table.Data(handles.point_count,2:4) = ...
-        num2cell(Coords);
+    data(handles.point_count,2:4) = num2cell(Coords);
+    set(handles.coords_table,'Data',data);
+        
 
     % update point to look for (unless at end of list as given by the
     % length of handles.coords_table.Data - ie the number of headpoints)
@@ -685,8 +698,8 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
     if(handles.editedLocationsList) % true if edited
         % check if user wants to save locations list too
         button = 'No';
-        button = questdlg({['The locations list appears to have been '...
-            'edited since it was last imported.'];...
+        button = questdlg({['The locations list appears to have been'...
+            ' edited or added to since it was last imported.'];...
             ['Would you also like to export your current '...
             'locations list?']},...
             'Export?','Yes','No','Yes');
