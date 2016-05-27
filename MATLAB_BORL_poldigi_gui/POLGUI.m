@@ -1,10 +1,10 @@
 function varargout = POLGUI(varargin)
 % -------------------------------------------------------------------------
-% Copyright (C) Reuben William Hill 2013, working at BORL, UCL, London
-% reuben.w.hill@gmail.com
+% Copyright (C) Reuben William Hill 2013-16, working at BORL, UCL, London
+% reuben.w.hill@gmail.com on behalf of Robert Cooper PhD.
 %
 % -------------------------------------------------------------------------
-%                   -- BORL POLGUI v1.1.0 for Matlab R2015b  -- 
+%                   -- POLGUI v1.1.0 for Matlab R2015b  -- 
 % -------------------------------------------------------------------------
 %
 % For the Polhemus PATRIOT digitiser, attached to stylus pen with button.
