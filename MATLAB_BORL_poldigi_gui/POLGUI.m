@@ -1,4 +1,4 @@
-function varargout = BORL_poldigi_gui_ver1(varargin)
+function varargout = POLGUI(varargin)
 % -------------------------------------------------------------------------
 % Copyright (C) Reuben William Hill 2013, working at BORL, UCL, London
 % reuben.w.hill@gmail.com
@@ -13,7 +13,7 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 % point is on a new line.
 %
 % The baud rate is set via the variable "BaudRate" in 
-% BORL_poldigi_gui_ver1_OutputFcn and has default value 115200.
+% POLGUI_OutputFcn and has default value 115200.
 %
 % Points are digitised by pressing the stylus button.
 %
@@ -34,37 +34,37 @@ function varargout = BORL_poldigi_gui_ver1(varargin)
 %
 %
 % MATLAB GUIDE Generated comments:
-% BORL_POLDIGI_GUI_VER1 MATLAB code for BORL_poldigi_gui_ver1.fig
-%      BORL_POLDIGI_GUI_VER1, by itself, creates a new BORL_POLDIGI_GUI_VER1 or raises the existing
+% POLGUI MATLAB code for POLGUI.fig
+%      POLGUI, by itself, creates a new POLGUI or raises the existing
 %      singleton*.
 %
-%      H = BORL_POLDIGI_GUI_VER1 returns the handle to a new BORL_POLDIGI_GUI_VER1 or the handle to
+%      H = POLGUI returns the handle to a new POLGUI or the handle to
 %      the existing singleton*.
 %
-%      BORL_POLDIGI_GUI_VER1('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in BORL_POLDIGI_GUI_VER1.M with the given input arguments.
+%      POLGUI('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in POLGUI.M with the given input arguments.
 %
-%      BORL_POLDIGI_GUI_VER1('Property','Value',...) creates a new BORL_POLDIGI_GUI_VER1 or raises the
+%      POLGUI('Property','Value',...) creates a new POLGUI or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before BORL_poldigi_gui_ver1_OpeningFcn gets called.  An
+%      applied to the GUI before POLGUI_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to BORL_poldigi_gui_ver1_OpeningFcn via varargin.
+%      stop.  All inputs are passed to POLGUI_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help BORL_poldigi_gui_ver1
+% Edit the above text to modify the response to help POLGUI
 
-% Last Modified by GUIDE v2.5 25-May-2016 16:03:48
+% Last Modified by GUIDE v2.5 27-May-2016 14:17:33
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @BORL_poldigi_gui_ver1_OpeningFcn, ...
-                   'gui_OutputFcn',  @BORL_poldigi_gui_ver1_OutputFcn, ...
+                   'gui_OpeningFcn', @POLGUI_OpeningFcn, ...
+                   'gui_OutputFcn',  @POLGUI_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -79,15 +79,15 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before BORL_poldigi_gui_ver1 is made visible.
-function BORL_poldigi_gui_ver1_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before POLGUI is made visible.
+function POLGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to BORL_poldigi_gui_ver1 (see VARARGIN)
+% varargin   command line arguments to POLGUI (see VARARGIN)
 
-% Choose default command line output for BORL_poldigi_gui_ver1
+% Choose default command line output for POLGUI
 handles.output = hObject;
 
 %--------------------define close request function----------------------
@@ -97,13 +97,13 @@ set(gcf,'CloseRequestFcn',{@CloseFcn,handles});
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes BORL_poldigi_gui_ver1 wait for user response (see UIRESUME)
+% UIWAIT makes POLGUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = BORL_poldigi_gui_ver1_OutputFcn(hObject, eventdata, handles) 
+function varargout = POLGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
