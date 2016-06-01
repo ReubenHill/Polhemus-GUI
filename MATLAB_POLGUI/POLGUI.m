@@ -195,7 +195,12 @@ handles.editedAtlasPoints = false;
 %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
 
 try
-    load('savedLocationNames.mat','locations');
+    if ~isdeployed
+        load('savedLocationNames.mat','locations');
+    else
+        % Deployed
+        load(fullfile(ctfroot,'savedLocationNames.mat'),'locations');
+    end
 catch
     uiwait(warndlg('Could not find previously used location list.',...
         'Location Warning','modal'));
@@ -229,7 +234,13 @@ catch
     fclose(FileID);
 
     % Save locations variable to be loaded next time
-    save('savedLocationNames.mat','locations')
+    if ~isdeployed
+        save('savedLocationNames.mat','locations');
+    else
+        % Deployed
+        save(fullfile(ctfroot,'savedLocationNames.mat'),'locations');
+    end
+        
 end
 
 %load other data needed for headpoint plotting
@@ -892,7 +903,11 @@ locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ...
 fclose(FileID);
 
 % Save locations variable to be loaded next time
-save('savedLocationNames.mat','locations')
+if ~isdeployed
+    save('savedLocationNames.mat','locations');
+else
+    save(fullfile(ctfroot,'savedLocationNames.mat'),'locations');
+end
 
 % Reset points counter
 handles.point_count = 0;
