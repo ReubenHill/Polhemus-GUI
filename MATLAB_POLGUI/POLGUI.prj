@@ -69,6 +69,7 @@
     </fileset.main>
     <fileset.resources>
       <file>${PROJECT_ROOT}\refpts_landmarks.mat</file>
+      <file>${PROJECT_ROOT}\savedLocationNames.mat</file>
       <file>${PROJECT_ROOT}\scalpSurfaceMesh.mat</file>
     </fileset.resources>
     <fileset.package>
