@@ -198,7 +198,7 @@ try
     if ~isdeployed
         load('savedLocationNames.mat','locations');
     else
-        load(fullfile(ctfroot,'savedLocationNames.mat'),'locations');
+        load(which('savedLocationNames.mat'),'locations');
     end
 catch
     uiwait(warndlg('Could not find previously used location list.',...
