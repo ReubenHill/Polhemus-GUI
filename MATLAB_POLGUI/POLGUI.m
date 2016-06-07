@@ -211,11 +211,7 @@ handles.editedAtlasPoints = false;
 %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
 
 try
-    if ~isdeployed
-        load('savedLocationNames.mat','locations');
-    else
-        load(which('savedLocationNames.mat'),'locations');
-    end
+    load(which('savedLocationNames.mat'),'locations');
 catch
     uiwait(warndlg('Could not find previously used location list.',...
         'Location Warning','modal'));
