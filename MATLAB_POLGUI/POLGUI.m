@@ -96,8 +96,6 @@ if isdeployed
     [status, result] = system('path');
     handles.currentDir = char(regexpi(result, 'Path=(.*?);', ...
         'tokens', 'once'));
-else
-    handles.currentDir = pwd;
 end
 
 %-------------------Get the default user location--------------------
