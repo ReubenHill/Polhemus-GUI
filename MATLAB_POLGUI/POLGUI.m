@@ -1008,18 +1008,17 @@ if(handles.editedAtlasPoints)
     ,'Export Warning','modal'));
 end
 
-% Open a "Save As..." Dialogue with different saving options as shown.
-% The filterIndex gives the index (1, 2 or 3) of the chosen save type.
+% Open an "Export" Dialogue
 if ~isdeployed
     [fileName,pathName,filterIndex] = ... 
         uiputfile({'*.txt;*.dat;*.csv', ...
         'Text Files (*.txt) (*.dat) (*.csv)'} ...
-        ,'Save Location List File ...');
+        ,'Export Location List File ...');
 else
     [fileName,pathName,filterIndex] = ... 
         uiputfile({'*.txt;*.dat;*.csv', ...
         'Text Files (*.txt) (*.dat) (*.csv)'} ...
-        ,'Save Location List File ...',ctfroot);
+        ,'Export Location List File ...',ctfroot);
 end
 
 % Re-enable the interface objects.
