@@ -90,6 +90,24 @@ function POLGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for POLGUI
 handles.output = hObject;
 
+%-------------------Get the executable/.m directory--------------------
+
+if isdeployed
+    [status, result] = system('path');
+    handles.currentDir = char(regexpi(result, 'Path=(.*?);', ...
+        'tokens', 'once'));
+else
+    handles.currentDir = pwd;
+end
+
+%-------------------Get the default user location--------------------
+
+if ispc
+    handles.userDir = getenv('USERPROFILE');
+else
+    handles.userDir = getenv('HOME');
+end
+
 %--------------------define close request function----------------------
 %the function "CloseFcn" that I define now runs when quitting the gui
 set(gcf,'CloseRequestFcn',{@CloseFcn,handles});
