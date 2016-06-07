@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="4064400829" file="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI.prj" location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI" name="POLGUI" preferred-package-location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="1062463662" file="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI.prj" location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI" name="POLGUI" preferred-package-location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>POLGUI</param.appname>
     <param.icon />
     <param.icons />
@@ -71,7 +71,7 @@
       <file>${PROJECT_ROOT}\scalpSurfaceMesh.mat</file>
     </fileset.resources>
     <fileset.package>
-      <file>${PROJECT_ROOT}\Locations Example.txt</file>
+      <file>${PROJECT_ROOT}\Locations Example.csv</file>
       <file>${PROJECT_ROOT}\Readme.txt</file>
     </fileset.package>
     <fileset.depfun>
