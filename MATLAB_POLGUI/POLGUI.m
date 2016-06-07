@@ -319,7 +319,7 @@ function HeadAlign_Callback(hObject, eventdata, handles)
 if(handles.point_count >= 5)
     
     % extract the locations
-    locations = handles.coords_table.Data;
+    locations = get(handles.coords_table,'Data');
     
     % extract the landmark locations (the first five data points)...
     landmarks = locations(1:5,2:4);
@@ -334,7 +334,7 @@ if(handles.point_count >= 5)
     
     % reset list of points to just show locations to find so transformed 
     % points can be plotted
-    locations = handles.coords_table.Data;
+    locations = get(handles.coords_table,'Data');
     
     hold on
     
@@ -366,7 +366,7 @@ if(handles.point_count >= 5)
     
     
     % Show newly transformed cardinal point coords on table
-    handles.coords_table.Data = locations;
+    set(handles.coords_table,'Data',locations);
     
     %find matrix (A) and vector (B) needed to map head to cardinal points
     %with affine transformation
@@ -550,13 +550,11 @@ elseif(handles.disable_measurements == false)
     % Update table with newly measured x y and z values
     data(handles.point_count,2:4) = num2cell(Coords);
     set(handles.coords_table,'Data',data);
-        
 
     % update point to look for (unless at end of list as given by the
-    % length of handles.coords_table.Data - ie the number of headpoints)
-    if( handles.point_count < size(handles.coords_table.Data,1) )
-        set(handles.infobox,'string',...
-            handles.coords_table.Data(handles.point_count+1,1));
+    % length of data - ie the number of headpoints)
+    if( handles.point_count < size(data,1) )
+        set(handles.infobox,'string', data(handles.point_count+1,1));
             % (Set to the next position on the table)
     else
         set(handles.infobox,'string','End of locations list reached');
@@ -595,10 +593,14 @@ function remove_last_pt_Callback(hObject, eventdata, handles)
 if (handles.point_count ~= 0)
     if(handles.point_count ~= 5 || strcmp(get(handles.HeadAlign,'Enable'),'on') )
 
+        data = get(handles.coords_table,'Data');
+        
         % Set the last measured values of x, y and z to be empty cells
-        handles.coords_table.Data{handles.point_count,2} = []; % x
-        handles.coords_table.Data{handles.point_count,3} = []; % y
-        handles.coords_table.Data{handles.point_count,4} = []; % z
+        data{handles.point_count,2} = []; % x
+        data{handles.point_count,3} = []; % y
+        data{handles.point_count,4} = []; % z
+        
+        set(handles.coords_table,'Data',data);
 
         % Remove point from graph...
         delete(handles.pointhandle(handles.point_count));
@@ -609,9 +611,10 @@ if (handles.point_count ~= 0)
         % has just been deleted
         handles.point_count = handles.point_count - 1;
         
+        data = get(handles.coords_table,'Data');
+        
         % update next point to look for string
-        set(handles.infobox,'string',...
-                handles.coords_table.Data(handles.point_count+1,1))
+        set(handles.infobox,'string', data(handles.point_count+1,1));
         
         % Disable align if now not enough points
         if(handles.point_count <= 5)
