@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="1556773965" file="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI.prj" location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI" name="POLGUI" preferred-package-location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="431170294" file="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI.prj" location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI" name="POLGUI" preferred-package-location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>POLGUI</param.appname>
     <param.icon />
     <param.icons />
