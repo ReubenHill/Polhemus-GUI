@@ -71,7 +71,7 @@
       <file>${PROJECT_ROOT}\scalpSurfaceMesh.mat</file>
     </fileset.resources>
     <fileset.package>
-      <file>${PROJECT_ROOT}\Locations Example.csv</file>
+      <file>${PROJECT_ROOT}\Locations Example.txt</file>
       <file>${PROJECT_ROOT}\Readme.txt</file>
     </fileset.package>
     <fileset.depfun>
