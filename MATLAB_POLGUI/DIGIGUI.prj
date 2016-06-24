@@ -1,6 +1,6 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="431170294" file="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI.prj" location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI" name="POLGUI" preferred-package-location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
-    <param.appname>POLGUI</param.appname>
+  <configuration build-checksum="3580578522" file="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI.prj" location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI" name="DIGIGUI" preferred-package-location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+    <param.appname>DIGIGUI</param.appname>
     <param.icon />
     <param.icons />
     <param.version>1.1</param.version>
@@ -11,14 +11,14 @@
     <param.description>A graphical user interface for use with the Polhemus Patriot Digitiser at a baud rate of 115200.</param.description>
     <param.screenshot />
     <param.guid />
-    <param.installpath.string>\Gowerlabs\POLGUI\</param.installpath.string>
+    <param.installpath.string>\Gowerlabs\DIGIGUI\</param.installpath.string>
     <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
     <param.logo />
     <param.install.notes />
     <param.target.install.notes />
-    <param.intermediate>${PROJECT_ROOT}\POLGUI\for_testing</param.intermediate>
-    <param.files.only>${PROJECT_ROOT}\POLGUI\for_redistribution_files_only</param.files.only>
-    <param.output>${PROJECT_ROOT}\POLGUI\for_redistribution</param.output>
+    <param.intermediate>${PROJECT_ROOT}\DIGIGUI\for_testing</param.intermediate>
+    <param.files.only>${PROJECT_ROOT}\DIGIGUI\for_redistribution_files_only</param.files.only>
+    <param.output>${PROJECT_ROOT}\DIGIGUI\for_redistribution</param.output>
     <param.enable.clean.build>false</param.enable.clean.build>
     <param.user.defined.mcr.options>-a savedLocationNames.mat</param.user.defined.mcr.options>
     <param.embed.ctf>true</param.embed.ctf>
@@ -67,6 +67,7 @@
       <file>${PROJECT_ROOT}\POLGUI.m</file>
     </fileset.main>
     <fileset.resources>
+      <file>${PROJECT_ROOT}\DIGIGUI.fig</file>
       <file>${PROJECT_ROOT}\refpts_landmarks.mat</file>
       <file>${PROJECT_ROOT}\scalpSurfaceMesh.mat</file>
     </fileset.resources>
@@ -77,13 +78,13 @@
     <fileset.depfun>
       <file>${PROJECT_ROOT}\affine_trans_RJC.m</file>
       <file>${PROJECT_ROOT}\affinemap.m</file>
+      <file>${PROJECT_ROOT}\DIGIGUI.m</file>
       <file>${PROJECT_ROOT}\FindPatriotSerial.m</file>
-      <file>${PROJECT_ROOT}\POLGUI.fig</file>
     </fileset.depfun>
     <build-deliverables>
-      <file location="${PROJECT_ROOT}\POLGUI\for_testing" name="splash.png" optional="false">D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI\for_testing\splash.png</file>
-      <file location="${PROJECT_ROOT}\POLGUI\for_testing" name="readme.txt" optional="true">D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI\for_testing\readme.txt</file>
-      <file location="${PROJECT_ROOT}\POLGUI\for_testing" name="POLGUI.exe" optional="false">D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\POLGUI\for_testing\POLGUI.exe</file>
+      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="readme.txt" optional="true">D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_testing\readme.txt</file>
+      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="DIGIGUI.exe" optional="false">D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_testing\DIGIGUI.exe</file>
+      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="splash.png" optional="false">D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_testing\splash.png</file>
     </build-deliverables>
     <workflow />
     <matlab>

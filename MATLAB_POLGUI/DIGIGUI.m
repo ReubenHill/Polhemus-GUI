@@ -1,10 +1,10 @@
-function varargout = POLGUI(varargin)
+function varargout = DIGIGUI(varargin)
 % -------------------------------------------------------------------------
-% Copyright (C) Reuben William Hill 2013-16, working at BORL, UCL, London
-% reuben.w.hill@gmail.com on behalf of Robert Cooper PhD.
+% Copyright (C) Gowerlabs Ltd
+% Created by Reuben W. Hill, Contact reuben@gowerlabs.co.uk
 %
 % -------------------------------------------------------------------------
-%                   -- POLGUI v1.1.0 for Matlab R2015b  -- 
+%                   -- DIGIGUI v1.1.0 for Matlab R2015b  -- 
 % -------------------------------------------------------------------------
 %
 % For the Polhemus PATRIOT digitiser, attached to stylus pen with button.
@@ -13,7 +13,7 @@ function varargout = POLGUI(varargin)
 % point is on a new line.
 %
 % The baud rate is set via the variable "BaudRate" in 
-% POLGUI_OutputFcn and has default value 115200.
+% DIGIGUI_OutputFcn and has default value 115200.
 %
 % Points are digitised by pressing the stylus button.
 %
@@ -34,37 +34,37 @@ function varargout = POLGUI(varargin)
 %
 %
 % MATLAB GUIDE Generated comments:
-% POLGUI MATLAB code for POLGUI.fig
-%      POLGUI, by itself, creates a new POLGUI or raises the existing
+% DIGIGUI MATLAB code for DIGIGUI.fig
+%      DIGIGUI, by itself, creates a new DIGIGUI or raises the existing
 %      singleton*.
 %
-%      H = POLGUI returns the handle to a new POLGUI or the handle to
+%      H = DIGIGUI returns the handle to a new DIGIGUI or the handle to
 %      the existing singleton*.
 %
-%      POLGUI('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in POLGUI.M with the given input arguments.
+%      DIGIGUI('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in DIGIGUI.M with the given input arguments.
 %
-%      POLGUI('Property','Value',...) creates a new POLGUI or raises the
+%      DIGIGUI('Property','Value',...) creates a new DIGIGUI or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before POLGUI_OpeningFcn gets called.  An
+%      applied to the GUI before DIGIGUI_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to POLGUI_OpeningFcn via varargin.
+%      stop.  All inputs are passed to DIGIGUI_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help POLGUI
+% Edit the above text to modify the response to help DIGIGUI
 
-% Last Modified by GUIDE v2.5 27-May-2016 14:17:33
+% Last Modified by GUIDE v2.5 24-Jun-2016 14:56:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @POLGUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @POLGUI_OutputFcn, ...
+                   'gui_OpeningFcn', @DIGIGUI_OpeningFcn, ...
+                   'gui_OutputFcn',  @DIGIGUI_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -79,15 +79,15 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before POLGUI is made visible.
-function POLGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before DIGIGUI is made visible.
+function DIGIGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to POLGUI (see VARARGIN)
+% varargin   command line arguments to DIGIGUI (see VARARGIN)
 
-% Choose default command line output for POLGUI
+% Choose default command line output for DIGIGUI
 handles.output = hObject;
 
 %-------------------Get the executable/.m directory--------------------
@@ -113,13 +113,13 @@ set(gcf,'CloseRequestFcn',{@CloseFcn,handles});
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes POLGUI wait for user response (see UIRESUME)
+% UIWAIT makes DIGIGUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = POLGUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = DIGIGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
