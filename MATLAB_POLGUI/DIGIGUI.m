@@ -1,6 +1,6 @@
 function varargout = DIGIGUI(varargin)
 % -------------------------------------------------------------------------
-% Copyright (C) Gowerlabs Ltd
+% Copyright (C) Gowerlabs (R) Ltd
 % Created by Reuben W. Hill, Contact reuben@gowerlabs.co.uk
 %
 % -------------------------------------------------------------------------

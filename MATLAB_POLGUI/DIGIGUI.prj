@@ -12,11 +12,9 @@
     <param.authnamewatermark>Reuben Hill</param.authnamewatermark>
     <param.email>reuben@gowerlabs.co.uk</param.email>
     <param.company>Gowerlabs</param.company>
-    <param.summary>Copyright © Gowerlabs 2016. All Rights Reserved.
-MATLAB®. © 1984 - 2015.</param.summary>
-    <param.description>A graphical user interface for use with the Polhemus Patriot Digitiser at a baud rate of 115200.
-
-Copyright © Gowerlabs 2016. All Rights Reserved.
+    <param.summary>A graphical user interface for use with the Polhemus Patriot Digitiser at a baud rate of 115200.</param.summary>
+    <param.description>Copyright © Gowerlabs® Ltd. 2016. All Rights Reserved.
+The Gowerlabs® name and logo are Registered Trademarks of Gowerlabs Ltd.
 MATLAB®. © 1984 - 2015</param.description>
     <param.screenshot>${PROJECT_ROOT}\Gowerlabs logo (no text, gradient background).png</param.screenshot>
     <param.guid />
