@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="1278884179" file="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI.prj" location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI" name="DIGIGUI" preferred-package-location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="1840959583" file="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI.prj" location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI" name="DIGIGUI" preferred-package-location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>DIGIGUI</param.appname>
     <param.icon>${PROJECT_ROOT}\DIGIGUI_resources\icon.ico</param.icon>
     <param.icons>
@@ -12,11 +12,11 @@
     <param.authnamewatermark>Reuben Hill</param.authnamewatermark>
     <param.email>reuben@gowerlabs.co.uk</param.email>
     <param.company>Gowerlabs</param.company>
-    <param.summary>Copyright © Gowerlabs 2016. 
+    <param.summary>Copyright © Gowerlabs 2016. All Rights Reserved.
 MATLAB®. © 1984 - 2015.</param.summary>
     <param.description>A graphical user interface for use with the Polhemus Patriot Digitiser at a baud rate of 115200.
 
-Copyright © Gowerlabs 2016. 
+Copyright © Gowerlabs 2016. All Rights Reserved.
 MATLAB®. © 1984 - 2015</param.description>
     <param.screenshot>${PROJECT_ROOT}\Gowerlabs logo (no text, gradient background).png</param.screenshot>
     <param.guid />
