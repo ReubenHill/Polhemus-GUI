@@ -50,6 +50,7 @@ disp('Polhemus Patriot not found!')
 %if this part of function is reached without returning, the patriot device
 %was not communicated with successfully
 COMPort = 0;
+sensors = 0;
 
 return
     
