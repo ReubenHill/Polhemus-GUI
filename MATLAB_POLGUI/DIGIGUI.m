@@ -165,7 +165,7 @@ InterfaceObj=findobj(handles.figure1,'Enable','on');
 set(InterfaceObj,'Enable','off');
  
 % find serial com port
-handles.COMport = FindPatriotSerial(BaudRate);
+[handles.COMport, handles.sensors] = FindPatriotSerial(BaudRate);
  
 % Re-enable the interface objects.
 set(InterfaceObj,'Enable','on');
