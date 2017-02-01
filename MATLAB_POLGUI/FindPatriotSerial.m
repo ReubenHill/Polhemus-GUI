@@ -1,4 +1,4 @@
-function [ COMPort ] = FindPatriotSerial(BaudRate)
+function [ COMPort, sensors ] = FindPatriotSerial(BaudRate)
 %Finds the COM port of the Polhemus Patriot device when connected by RS232
 %   The function returns the COM port if successful, otherwise it returns
 %   0;
@@ -22,15 +22,21 @@ for k = 1:size(serialInfo.AvailableSerialPorts,1)
         fwrite(s,'p');
         pause(0.1);
         %read coordinates...
-        A = fgetl (s);
+        A = fread (s);
         fclose(s);
         delete(s);
-        if( size(A,2) == 59 ) %a position reading is a 59 character string
+        if( length(A) >= 59 ) %A position reading will be a string of at least 59 characters
             %com port of patriot successfully found!    
             COMPort = serialInfo.AvailableSerialPorts{k,1};
             disp( ['Polhemus Patriot device successfully found on ' serialInfo.AvailableSerialPorts{k,1}] )
             disp('Device returned the following string upon "p" command:')
-            disp(A);
+            disp(char(A'));
+            %determine if output was for a 1 or 2 sensor setup
+            if( length(A) < 120 ) % single source (might include "patriot ready!")
+                sensors = 1;
+            else
+                sensors = 2;
+            end
             return; %return to calling function
         end
     catch serialException %if error message, the below runs
