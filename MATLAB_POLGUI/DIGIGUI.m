@@ -276,9 +276,14 @@ handles.mesh = handles.mesh.mesh;
 %error test the first serial port functions...
 try 
     %------------------------SERIAL CALLBACK SETUP---------------------
-    %setup callback function to run when the polhemus system sends 48 bytes
-    %48 bytes is generally position data
-    handles.serial.BytesAvailableFcnCount = 48;
+    %setup callback function to run when the polhemus system sends the 
+    %number of bytes assosciated with one or two sensors. NB: the stated
+    %number of bytes is generally position data.
+    if(handles.sensors == 1)
+        handles.serial.BytesAvailableFcnCount = 48; % 48 bytes for 1 sensor
+    else
+        handles.serial.BytesAvailableFcnCount = 96; % 96 bytes for 2 sensors
+    end
     handles.serial.BytesAvailableFcnMode = 'byte';
     handles.serial.BytesAvailableFcn = {@ReadCoordsCallback,handles};
 
