@@ -516,6 +516,11 @@ handles = guidata(handles.figure1);
 
 %read the data on the serial port that triggered the callback
 data_str=fgetl(s);
+
+%read a second line if there are two sensors
+if(handles.sensors == 2)
+    data_str(2,:) = fgetl(s);
+end
    
 %don't run most of the callback if waiting to do alignment...
 if(handles.point_count == 5 && ... 
