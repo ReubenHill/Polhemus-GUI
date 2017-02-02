@@ -546,7 +546,13 @@ elseif(handles.disable_measurements == false)
     % 7 Roll of stylus degrees
 
     % extract coords
-    Coords = data_num(1,2:4);
+    Coords = data_num(:,2:4);
+    
+    % if there are 2 sensors do vector subtraction to get position of
+    % stylus sensor relative to second sensor
+    if(handles.sensors == 2)
+        Coords = Coords(1,:) - Coords(2,:);
+    end
 
     % disable head alignment butten for first five points (they are the
     % landmark positions)
