@@ -1,3 +1,13 @@
+Changelog v1.2.0
+---
+
+General:
+
+* 2 sensor support has been added. The displacement of a stylus sensor (attached as 
+  "sensor 1") relative to the displacement vector of a second connected sensor 
+  (attached as "sensor 2") is used for plotting and calculations when two sensors 
+  are detected.
+
 Changelog v1.1.0
 ---
 
