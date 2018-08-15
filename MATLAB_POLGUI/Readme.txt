@@ -5,5 +5,7 @@ included in the matlab directory.
 Hover over buttons in the user interface for more information about their
 function.
 
-Copyright (C) Reuben Hill, 2013-16
-reuben.w.hill@gmail.com
+Copyright (C) 2016 Reuben Hill, University College London
+reuben.hill@ucl.ac.uk
+
+This package is licenced under the MIT Licence (see LICENCE.txt).

@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="3073292810" file="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI.prj" location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI" name="DIGIGUI" preferred-package-location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="3073292810" file="C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI.prj" location="C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI" name="DIGIGUI" preferred-package-location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>DIGIGUI</param.appname>
     <param.icon>${PROJECT_ROOT}\DIGIGUI_resources\icon.ico</param.icon>
     <param.icons>
@@ -10,15 +10,14 @@
     </param.icons>
     <param.version>1.2</param.version>
     <param.authnamewatermark>Reuben Hill</param.authnamewatermark>
-    <param.email>reuben@gowerlabs.co.uk</param.email>
-    <param.company>Gowerlabs</param.company>
+    <param.email>reuben.hill@ucl.ac.uk</param.email>
+    <param.company>University College London</param.company>
     <param.summary>A graphical user interface for use with the Polhemus Patriot Digitiser at a baud rate of 115200.</param.summary>
-    <param.description>Copyright © Gowerlabs® Ltd. 2017. All Rights Reserved.
-The Gowerlabs® name and logo are Registered Trademarks of Gowerlabs Ltd.
-MATLAB®. © 1984 - 2015</param.description>
-    <param.screenshot>${PROJECT_ROOT}\Gowerlabs logo (no text, gradient background).png</param.screenshot>
+    <param.description>Copyright © 2016 Reuben Hill, University College London. MATLAB®. © 1984 - 2015.
+This package is licenced under the MIT Licence (see LICENCE.txt).</param.description>
+    <param.screenshot />
     <param.guid />
-    <param.installpath.string>\Gowerlabs\DIGIGUI\</param.installpath.string>
+    <param.installpath.string>\University College London\DIGIGUI\</param.installpath.string>
     <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
     <param.logo />
     <param.install.notes />
@@ -26,18 +25,14 @@ MATLAB®. © 1984 - 2015</param.description>
     <param.intermediate>${PROJECT_ROOT}\DIGIGUI\for_testing</param.intermediate>
     <param.files.only>${PROJECT_ROOT}\DIGIGUI\for_redistribution_files_only</param.files.only>
     <param.output>${PROJECT_ROOT}\DIGIGUI\for_redistribution</param.output>
+    <param.logdir>${PROJECT_ROOT}\DIGIGUI</param.logdir>
     <param.enable.clean.build>false</param.enable.clean.build>
     <param.user.defined.mcr.options>-a savedLocationNames.mat</param.user.defined.mcr.options>
     <param.embed.ctf>true</param.embed.ctf>
     <param.target.type>subtarget.standalone</param.target.type>
     <param.support.packages />
-    <param.required.mcr.products>
-      <item>35000</item>
-      <item>35010</item>
-      <item>35001</item>
-    </param.required.mcr.products>
     <param.web.mcr>true</param.web.mcr>
-    <param.package.mcr>true</param.package.mcr>
+    <param.package.mcr>false</param.package.mcr>
     <param.no.mcr>false</param.no.mcr>
     <param.web.mcr.name>MyAppInstaller_web</param.web.mcr.name>
     <param.package.mcr.name>MyAppInstaller_mcr</param.package.mcr.name>
@@ -46,6 +41,7 @@ MATLAB®. © 1984 - 2015</param.description>
     <param.create.log>false</param.create.log>
     <param.log.file>log</param.log.file>
     <unset>
+      <param.screenshot />
       <param.guid />
       <param.installpath.string />
       <param.installpath.combo />
@@ -54,11 +50,13 @@ MATLAB®. © 1984 - 2015</param.description>
       <param.intermediate />
       <param.files.only />
       <param.output />
+      <param.logdir />
       <param.enable.clean.build />
       <param.embed.ctf />
       <param.target.type />
       <param.support.packages />
       <param.web.mcr />
+      <param.package.mcr />
       <param.no.mcr />
       <param.web.mcr.name />
       <param.package.mcr.name />
@@ -75,6 +73,7 @@ MATLAB®. © 1984 - 2015</param.description>
       <file>${PROJECT_ROOT}\scalpSurfaceMesh.mat</file>
     </fileset.resources>
     <fileset.package>
+      <file>${PROJECT_ROOT}\LICENCE.txt</file>
       <file>${PROJECT_ROOT}\Locations Example.txt</file>
       <file>${PROJECT_ROOT}\Readme.txt</file>
     </fileset.package>
@@ -84,23 +83,19 @@ MATLAB®. © 1984 - 2015</param.description>
       <file>${PROJECT_ROOT}\FindPatriotSerial.m</file>
     </fileset.depfun>
     <build-deliverables>
-      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="readme.txt" optional="true">D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_testing\readme.txt</file>
-      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="DIGIGUI.exe" optional="false">D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_testing\DIGIGUI.exe</file>
-      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="splash.png" optional="false">D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_testing\splash.png</file>
+      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="splash.png" optional="false">C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_testing\splash.png</file>
+      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="readme.txt" optional="true">C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_testing\readme.txt</file>
+      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="DIGIGUI.exe" optional="false">C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_testing\DIGIGUI.exe</file>
     </build-deliverables>
     <workflow />
     <matlab>
-      <root>C:\Program Files\MATLAB\R2015b</root>
+      <root>C:\Program Files\MATLAB\R2016b</root>
       <toolboxes>
-        <toolbox name="matlabhdlcoder" />
         <toolbox name="fixedpoint" />
         <toolbox name="matlabcoder" />
+        <toolbox name="matlabhdlcoder" />
+        <toolbox name="embeddedcoder" />
       </toolboxes>
-      <toolbox>
-        <matlabhdlcoder>
-          <enabled>true</enabled>
-        </matlabhdlcoder>
-      </toolbox>
       <toolbox>
         <fixedpoint>
           <enabled>true</enabled>
@@ -110,6 +105,16 @@ MATLAB®. © 1984 - 2015</param.description>
         <matlabcoder>
           <enabled>true</enabled>
         </matlabcoder>
+      </toolbox>
+      <toolbox>
+        <matlabhdlcoder>
+          <enabled>true</enabled>
+        </matlabhdlcoder>
+      </toolbox>
+      <toolbox>
+        <embeddedcoder>
+          <enabled>true</enabled>
+        </embeddedcoder>
       </toolbox>
     </matlab>
     <platform>
