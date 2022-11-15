@@ -1,5 +1,6 @@
 # Polhemus "DIGIGUI"
 MATLAB GUI for the Polhemus PATRIOT Digitiser, most recently tested with MATLAB R2016b.
+This was formerly known as "POLGUI" but was renamed to avoid confusion with another package.
 
 The GUI can be launched by running `DIGIGUI.m` using MATLAB. Ensure that all other `.m`, `.mat` and `.fig` files in this folder are included in the matlab directory.
 Once the GUI is running, hover the curser over buttons in the user interface for more information about their function.
