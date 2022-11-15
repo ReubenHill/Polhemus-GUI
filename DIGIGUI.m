@@ -1,10 +1,9 @@
 function varargout = DIGIGUI(varargin)
 % -------------------------------------------------------------------------
-% Copyright (C) Gowerlabs (R) Ltd
-% Created by Reuben W. Hill, Contact reuben@gowerlabs.co.uk
+% Copyright (C) Reuben W. Nixon-Hill (formerly Reuben W. Hill)
 %
 % -------------------------------------------------------------------------
-%                   -- DIGIGUI v1.1.0 for Matlab R2015b  -- 
+%                   -- DIGIGUI v1.2.0 for Matlab R2016b  --
 % -------------------------------------------------------------------------
 %
 % For the Polhemus PATRIOT digitiser, attached to stylus pen with button.
