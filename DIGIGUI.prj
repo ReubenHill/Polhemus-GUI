@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="3073292810" file="C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI.prj" location="C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI" name="DIGIGUI" preferred-package-location="D:\Users\Gowerlabs\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="222460721" file="C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\DIGIGUI.prj" location="C:\Users\Reuben\Documents\GitHub\Polhemus-GUI" name="DIGIGUI" preferred-package-location="C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\DIGIGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>DIGIGUI</param.appname>
     <param.icon>${PROJECT_ROOT}\DIGIGUI_resources\icon.ico</param.icon>
     <param.icons>
@@ -9,15 +9,16 @@
       <file>${PROJECT_ROOT}\DIGIGUI_resources\icon_16.png</file>
     </param.icons>
     <param.version>1.2</param.version>
-    <param.authnamewatermark>Reuben Hill</param.authnamewatermark>
-    <param.email>reuben.hill@ucl.ac.uk</param.email>
-    <param.company>University College London</param.company>
+    <param.authnamewatermark>Reuben Nixon-Hill</param.authnamewatermark>
+    <param.email>reuben.w.hill@gmail.com</param.email>
+    <param.company />
     <param.summary>A graphical user interface for use with the Polhemus Patriot Digitiser at a baud rate of 115200.</param.summary>
-    <param.description>Copyright © 2016 Reuben Hill, University College London. MATLAB®. © 1984 - 2015.
-This package is licenced under the MIT Licence (see LICENCE.txt).</param.description>
+    <param.description>Version 1.2.1.
+Copyright © 2023 Reuben Nixon-Hill, MATLAB® © 1984 - 2016 The MathWorks, Inc.
+This package is licenced under the MIT Licence (see LICENCE.txt) and was created using MATLAB® compiler.</param.description>
     <param.screenshot />
     <param.guid />
-    <param.installpath.string>\University College London\DIGIGUI\</param.installpath.string>
+    <param.installpath.string>\DIGIGUI\</param.installpath.string>
     <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
     <param.logo />
     <param.install.notes />
@@ -34,13 +35,14 @@ This package is licenced under the MIT Licence (see LICENCE.txt).</param.descrip
     <param.web.mcr>true</param.web.mcr>
     <param.package.mcr>false</param.package.mcr>
     <param.no.mcr>false</param.no.mcr>
-    <param.web.mcr.name>MyAppInstaller_web</param.web.mcr.name>
-    <param.package.mcr.name>MyAppInstaller_mcr</param.package.mcr.name>
+    <param.web.mcr.name>DIGIGUI_web</param.web.mcr.name>
+    <param.package.mcr.name>DIGIGUI_mcr</param.package.mcr.name>
     <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
     <param.windows.command.prompt>true</param.windows.command.prompt>
     <param.create.log>false</param.create.log>
     <param.log.file>log</param.log.file>
     <unset>
+      <param.company />
       <param.screenshot />
       <param.guid />
       <param.installpath.string />
@@ -58,8 +60,6 @@ This package is licenced under the MIT Licence (see LICENCE.txt).</param.descrip
       <param.web.mcr />
       <param.package.mcr />
       <param.no.mcr />
-      <param.web.mcr.name />
-      <param.package.mcr.name />
       <param.no.mcr.name />
       <param.windows.command.prompt />
       <param.create.log />
@@ -83,9 +83,9 @@ This package is licenced under the MIT Licence (see LICENCE.txt).</param.descrip
       <file>${PROJECT_ROOT}\FindPatriotSerial.m</file>
     </fileset.depfun>
     <build-deliverables>
-      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="splash.png" optional="false">C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_testing\splash.png</file>
-      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="readme.txt" optional="true">C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_testing\readme.txt</file>
-      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="DIGIGUI.exe" optional="false">C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\MATLAB_POLGUI\DIGIGUI\for_testing\DIGIGUI.exe</file>
+      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="splash.png" optional="false">C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\DIGIGUI\for_testing\splash.png</file>
+      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="readme.txt" optional="true">C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\DIGIGUI\for_testing\readme.txt</file>
+      <file location="${PROJECT_ROOT}\DIGIGUI\for_testing" name="DIGIGUI.exe" optional="false">C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\DIGIGUI\for_testing\DIGIGUI.exe</file>
     </build-deliverables>
     <workflow />
     <matlab>

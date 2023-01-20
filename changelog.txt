@@ -1,3 +1,10 @@
+Changelog v1.2.1
+---
+
+General:
+
+* Update copyright and licence information.
+
 Changelog v1.2.0
 ---
 
