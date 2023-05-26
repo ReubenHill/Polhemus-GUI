@@ -8,19 +8,19 @@ function varargout = DIGIGUI(varargin)
 %
 % For the Polhemus PATRIOT digitiser, attached to stylus pen with button.
 %
-% A list of points to digitise is imported from a text file, where each 
+% A list of points to digitise is imported from a text file, where each
 % point is on a new line.
 %
-% The baud rate is set via the variable "BaudRate" in 
+% The baud rate is set via the variable "BaudRate" in
 % DIGIGUI_OutputFcn and has default value 115200.
 %
 % Points are digitised by pressing the stylus button.
 %
-% After getting 5 reference cardinal points 'Nasion','Inion','Ar','Al' and 
+% After getting 5 reference cardinal points 'Nasion','Inion','Ar','Al' and
 % 'Cz', an Atlas reference baby head, with these points marked, is mapped
 % onto the graph display of points.
 %
-% Before the allignment of the head model, a coordinte transform is done: 
+% Before the allignment of the head model, a coordinte transform is done:
 % 1: place the 'inion' at the origin
 % 2: rotate the 'Al' into the y axis
 % 3: rotate the 'Ar' into the xy plane about the new 'Inion'-'Al' y axis
@@ -28,7 +28,7 @@ function varargout = DIGIGUI(varargin)
 %    plane, thus alligning the inion and nasion.
 % This coordinate transform is then applied to all measured points.
 %
-% A tab delimited list of points and their XYZ coords is outputted to 
+% A tab delimited list of points and their XYZ coords is outputted to
 % a file of the users choosing.
 %
 %
@@ -118,7 +118,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = DIGIGUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = DIGIGUI_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -155,28 +155,28 @@ end
 
 %------------------------CREATE SERIAL OBJECT---------------------------
 
-% Create serial object and set baud rate 
+% Create serial object and set baud rate
 BaudRate = 115200;
 
 % Find interface objects that are set to 'on' i.e. enabled...
 InterfaceObj=findobj(handles.figure1,'Enable','on');
 % ... and turn them off.
 set(InterfaceObj,'Enable','off');
- 
+
 % find serial com port
 [handles.COMport, handles.sensors] = FindPatriotSerial(BaudRate);
- 
+
 % Re-enable the interface objects.
 set(InterfaceObj,'Enable','on');
 
 if(handles.COMport ~= 0) %patriot found
     handles.serial = serial(handles.COMport,'BaudRate', BaudRate);
 else
-    
-    %-------------------QUIT & ERROR IF DEVICE NOT FOUND--------------------   
+
+    %-------------------QUIT & ERROR IF DEVICE NOT FOUND--------------------
     str1 = 'Polhemus Patriot Device not found or communicated with successfully.';
     str2 = ['Check the device is on and its baud rate is set to '...
-        sprintf('%i',BaudRate) ... 
+        sprintf('%i',BaudRate) ...
         ' on both the hardware switches of the device and the settings of'...
         ' any USB link cable used.'];
     str3 = ['If running in MATLAB, try restarting MATLAB to scan for new'...
@@ -190,7 +190,7 @@ else
     guidata(hObject, handles);
     CloseFcn(hObject,eventdata,handles);
     return;
-    
+
 end
 
 
@@ -214,19 +214,19 @@ try
 catch
     uiwait(warndlg('Could not find previously used location list.',...
         'Location Warning','modal'));
-    
+
     % Ask user to load a location list file. Note that the default deployed
     % location is handles.currentDir instead of handles.userDir since the
-    % example locations list file can be found in the executable directory 
+    % example locations list file can be found in the executable directory
     % (handles.currentDir).
     if ~isdeployed
-        [filename,pathname] = ... 
+        [filename,pathname] = ...
             uigetfile({'*.txt;*.dat;*.csv', ...
             'Text Files (*.txt) (*.dat) (*.csv)'} ...
             ,['Select Location List File - Each Measurement Point' ...
               ' should be on a New Line']);
     else
-        [filename,pathname] = ... 
+        [filename,pathname] = ...
             uigetfile({'*.txt;*.dat;*.csv', ...
             'Text Files (*.txt) (*.dat) (*.csv)'} ...
             ,['Select Location List File - Each Measurement Point' ...
@@ -251,7 +251,7 @@ catch
     locations = textscan(FileID,'%s','delimiter','\n');
 
     % append to list of reference points and convert to string array
-    locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
+    locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ...
         locations{1,1}];
 
     % Close file
@@ -263,7 +263,7 @@ catch
     else
         save(fullfile(ctfroot,'savedLocationNames.mat'),'locations');
     end
-        
+
 end
 
 %load other data needed for headpoint plotting
@@ -273,9 +273,9 @@ handles.mesh = load('scalpSurfaceMesh.mat');
 handles.mesh = handles.mesh.mesh;
 
 %error test the first serial port functions...
-try 
+try
     %------------------------SERIAL CALLBACK SETUP---------------------
-    %setup callback function to run when the polhemus system sends the 
+    %setup callback function to run when the polhemus system sends the
     %number of bytes assosciated with one or two sensors. NB: the stated
     %number of bytes is generally position data.
     if(handles.sensors == 1)
@@ -326,7 +326,7 @@ zlabel(handles.coord_plot,'Z');
 
 % Update handles structure
 guidata(hObject, handles);
-  
+
 
 
 
@@ -337,27 +337,27 @@ function HeadAlign_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 if(handles.point_count >= 5)
-    
+
     % extract the locations
     locations = get(handles.coords_table,'Data');
-    
+
     % extract the landmark locations (the first five data points)...
     landmarks = locations(1:5,2:4);
     % ... and convert to ordinary array from cell array
     landmarks = cell2mat(landmarks);
-    
+
     %get transformation matrix to new coord system
     [TransformMatrix,TransformVector] = GetCoordTransform(landmarks);
     %save tranformation
     handles.TransformMatrix = TransformMatrix;
     handles.TransformVector = TransformVector;
-    
-    % reset list of points to just show locations to find so transformed 
+
+    % reset list of points to just show locations to find so transformed
     % points can be plotted
     locations = get(handles.coords_table,'Data');
-    
+
     hold on
-    
+
     for k = 1:size(landmarks,1)
         %transform cardinal points
         landmarks(k,:) = landmarks(k,:) + TransformVector;
@@ -365,29 +365,29 @@ if(handles.point_count >= 5)
 
         %remove old point from graph
         delete(handles.pointhandle(k));
-        
+
         %replot point
         handles.pointhandle(k) = plot3(landmarks(k,1), ...
                                        landmarks(k,2), ...
                                        landmarks(k,3), ...
                                        'm.', 'MarkerSize', 30, ...
                                        'Parent' , handles.coord_plot);
-        
+
         %replot axes...
         axis(handles.coord_plot,'equal');
-        
+
         %update newly transformed cardinal point coords (converting back
         %to a cell array first)
         locations(k,2:4) = num2cell(landmarks(k,1:3));
-                                              
+
     end
-    
+
     hold off
-    
-    
+
+
     % Show newly transformed cardinal point coords on table
     set(handles.coords_table,'Data',locations);
-    
+
     %find matrix (A) and vector (B) needed to map head to cardinal points
     %with affine transformation
     [A,B] = affinemap(handles.AtlasLandmarks,landmarks);
@@ -404,17 +404,17 @@ if(handles.point_count >= 5)
                                'FaceColor',[239/255 208/255 207/255], ... (skin tone rgb vals)
                                'EdgeColor','none', ...
                                'Parent',handles.coord_plot);
-    
+
     % set lighting of head
     light;
     lighting gouraud;
     axis equal;
     hold off;
-    
-    
+
+
     % disable  headalign button
     set(hObject,'Enable','off');
-    
+
     % Update handles structure
     guidata(hObject, handles);
 
@@ -422,8 +422,8 @@ end
 
 
 %This function outputs a vector to transform inion to origin
-%also outputs rotation transformation matrix to allign the head model to 
-%intuitive coordinates. 
+%also outputs rotation transformation matrix to allign the head model to
+%intuitive coordinates.
 %To apply to row vector, the vector should be multiplied by the transpose
 %with the vector on the left
 function [Matrix,vector] = GetCoordTransform(landmarks)
@@ -520,9 +520,9 @@ data_str=fgetl(s);
 if(handles.sensors == 2)
     data_str(2,:) = fgetl(s);
 end
-   
+
 %don't run most of the callback if waiting to do alignment...
-if(handles.point_count == 5 && ... 
+if(handles.point_count == 5 && ...
         strcmp(get(handles.HeadAlign,'Enable'),'on') && ...
         handles.disable_measurements == false)
     % Warn user that points aren't collected until alignment done
@@ -531,7 +531,7 @@ if(handles.point_count == 5 && ...
 elseif(handles.disable_measurements == false)
     %increment the point count before measurement
     handles.point_count = handles.point_count + 1;
-    
+
     data_num=str2num(data_str);
 
     % Format of data obtained for the current settings
@@ -546,7 +546,7 @@ elseif(handles.disable_measurements == false)
 
     % extract coords
     Coords = data_num(:,2:4);
-    
+
     % if there are 2 sensors do vector subtraction to get position of
     % stylus sensor relative to second sensor
     if(handles.sensors == 2)
@@ -561,23 +561,23 @@ elseif(handles.disable_measurements == false)
     elseif(handles.point_count == 5)
         set(handles.HeadAlign,'Enable','on');
     % Do coord transform on points measured after landmark points
-    else 
+    else
         Coords = Coords + handles.TransformVector;
         Coords = Coords*handles.TransformMatrix';
     end
 
     % Extract previous data from table
     data = get(handles.coords_table,'Data');
-    
+
     % Check if table is currently full - if it is then adding a new point
     % will expand the table...
     if(handles.point_count > size(data,1))
-        % ... so update the bool that tracks if location names have been 
+        % ... so update the bool that tracks if location names have been
         % edited. When the user saves their data they will therefore be
         % prompted to save the locations list too.
         handles.editedLocationsList = true;
     end
-    
+
     % Update table with newly measured x y and z values
     data(handles.point_count,2:4) = num2cell(Coords);
     set(handles.coords_table,'Data',data);
@@ -589,7 +589,7 @@ elseif(handles.disable_measurements == false)
             % (Set to the next position on the table)
     else
         set(handles.infobox,'string','End of locations list reached');
-    end  
+    end
 
     %add the measured point to the 3d graph
     hold(handles.coord_plot,'on');
@@ -601,11 +601,11 @@ elseif(handles.disable_measurements == false)
                                             'Parent' , handles.coord_plot);
     else %Note: above marker points are plotted differently
         handles.pointhandle(handles.point_count) = plot3(Coords(1), ...
-                                            Coords(2),Coords(3), ... 
+                                            Coords(2),Coords(3), ...
                                            'b.', 'MarkerSize', 30, ...
                                            'Parent',handles.coord_plot);
     end
-    hold(handles.coord_plot,'off'); 
+    hold(handles.coord_plot,'off');
     %replot axes...
     axis(handles.coord_plot,'equal');
 end
@@ -625,28 +625,28 @@ if (handles.point_count ~= 0)
     if(handles.point_count ~= 5 || strcmp(get(handles.HeadAlign,'Enable'),'on') )
 
         data = get(handles.coords_table,'Data');
-        
+
         % Set the last measured values of x, y and z to be empty cells
         data{handles.point_count,2} = []; % x
         data{handles.point_count,3} = []; % y
         data{handles.point_count,4} = []; % z
-        
+
         set(handles.coords_table,'Data',data);
 
         % Remove point from graph...
         delete(handles.pointhandle(handles.point_count));
         % and replot axes.
         axis(handles.coord_plot,'equal');
-        
+
         % Decrement point_count so next measurement is of the point which
         % has just been deleted
         handles.point_count = handles.point_count - 1;
-        
+
         data = get(handles.coords_table,'Data');
-        
+
         % update next point to look for string
         set(handles.infobox,'string', data(handles.point_count+1,1));
-        
+
         % Disable align if now not enough points
         if(handles.point_count <= 5)
             set(handles.HeadAlign,'Enable','off');
@@ -678,26 +678,26 @@ set(InterfaceObj,'Enable','off');
 % Open a "Save As..." Dialogue with different saving options as shown.
 % The filterIndex gives the index (1, 2 or 3) of the chosen save type.
 if ~isdeployed
-    [fileName,pathName,filterIndex] = ... 
-        uiputfile({'*.csv;*.dat;*.txt', ... 
+    [fileName,pathName,filterIndex] = ...
+        uiputfile({'*.csv;*.dat;*.txt', ...
         'Comma-delimited text files (*.csv) (*.dat) (*.txt)'; ...
         ...
         '*.mat', ...
         'MAT-file (*.mat)'; ...
         ...
         '*.xls;*.xlsb;*.xlsm;*.xlsx', ...
-        'Excel® spreadsheet files (*.xls) (*.xlsb) (*.xlsm) (*.xlsx)'; ...
+        'Excelï¿½ spreadsheet files (*.xls) (*.xlsb) (*.xlsm) (*.xlsx)'; ...
         },'Save As...');
 else
-    [fileName,pathName,filterIndex] = ... 
-        uiputfile({'*.csv;*.dat;*.txt', ... 
+    [fileName,pathName,filterIndex] = ...
+        uiputfile({'*.csv;*.dat;*.txt', ...
         'Comma-delimited text files (*.csv) (*.dat) (*.txt)'; ...
         ...
         '*.mat', ...
         'MAT-file (*.mat)'; ...
         ...
         '*.xls;*.xlsb;*.xlsm;*.xlsx', ...
-        'Excel® spreadsheet files (*.xls) (*.xlsb) (*.xlsm) (*.xlsx)'; ...
+        'Excelï¿½ spreadsheet files (*.xls) (*.xlsb) (*.xlsm) (*.xlsx)'; ...
         },'Save As...',handles.userDir);
 end
 
@@ -709,7 +709,7 @@ handles.disable_measurements = false;
 guidata(hObject,handles);
 
 if(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
-    
+
     data = get(handles.coords_table,'Data');
 
     % check data cell array has same number of columns as there are column
@@ -717,22 +717,22 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
     if(size(data,2) < length(get(handles.coords_table,'ColumnName')))
 
         % dont save table if not enough data is available
-        errordlg('Cannot save without recorded location data.', ... 
+        errordlg('Cannot save without recorded location data.', ...
             'Save Error','modal');
 
         % exit function here
         guidata(hObject,handles);
         return;
     end
-    
+
     % If the chosen save type is .mat then use a standard matlab save command
     if(filterIndex == 2)
         disp(['Data saving to ' pathName fileName]);
         dataOutput = get(handles.coords_table,'Data');
         save([pathName fileName],'dataOutput');
         disp('Data is stored in cell array "dataOutput"');
-    
-    % Otherwise create a table from the cell array and output that to file.    
+
+    % Otherwise create a table from the cell array and output that to file.
     else
         % find any empty cells in Locations data
         emptyLocationNames = cellfun('isempty',data(:,1));
@@ -743,7 +743,7 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
             buttonPressed = questdlg({'Some location names are unspecified.';
                                       'Missing location names will be replaced by the symbol "-".';...
                                       'Would you like to continue?'},...
-                                      'Warning','Yes','No','Yes'); 
+                                      'Warning','Yes','No','Yes');
         end
 
         %Only save data if user presses Yes or Yes has been set previously.
@@ -752,7 +752,7 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
             disp(['Data saving to ' pathName fileName]);
 
             %Mark empty location names as '-'
-            data(emptyLocationNames,1) = {'-'};       
+            data(emptyLocationNames,1) = {'-'};
 
             tableToOutput = cell2table(data,'VariableNames', ...
                                        get(handles.coords_table,'ColumnName'));
@@ -761,7 +761,7 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
             writetable(tableToOutput,[pathName fileName]);
         end
     end
-    
+
     if(handles.editedLocationsList) % true if edited
         % check if user wants to save locations list too
         button = 'No';
@@ -776,7 +776,7 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
             ExportHeadpoints_Callback(hObject, eventdata, handles);
         end
     end
-    
+
 end
 guidata(hObject,handles);
 
@@ -789,7 +789,7 @@ function coords_table_CellSelectionCallback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 if(isempty(eventdata.Indices))
-    % delete 'selectedRow' field of 'handles' if the callback is triggered 
+    % delete 'selectedRow' field of 'handles' if the callback is triggered
     % by deselection (eg by the removal or addition of a set of coordinates)
     handles = rmfield(handles,'selectedRow');
 else
@@ -808,8 +808,8 @@ function InsertRowPushbutton_Callback(hObject, eventdata, handles)
 
 data = get(handles.coords_table,'Data');
 
-% See if the selectedRow variable exists within the handles struct 
-% (doesn't if no selection performed before clicking or cell has been 
+% See if the selectedRow variable exists within the handles struct
+% (doesn't if no selection performed before clicking or cell has been
 % deselected)
 if(isfield(handles,'selectedRow'))
     if(handles.selectedRow(end) < 5)
@@ -822,25 +822,25 @@ if(isfield(handles,'selectedRow'))
         data(row+1,:) = cell(1,size(data,2));
         % add back the data that was saved before by concatenating below where
         % the new row has been added.
-        data = [data(1:row+1,:) ; dataBelowSelectedRow]; 
-        
-        % check if have added row within where measurement has already been 
+        data = [data(1:row+1,:) ; dataBelowSelectedRow];
+
+        % check if have added row within where measurement has already been
         % made
         if(handles.selectedRow(end) < handles.point_count)
             % increment point count to account for 1 extra point
             handles.point_count = handles.point_count + 1;
         end
-        
+
         % Locations list has now been edited so change bool.
         handles.editedLocationsList = true;
-        
-    end    
+
+    end
 else
 %    % insert empty row at the end
 %    data{end+1,1} = [];
-    
+
     % Tell user to select a row before inserting
-    errordlg('Please select a row to insert below.','Insert Error','modal');   
+    errordlg('Please select a row to insert below.','Insert Error','modal');
 end
 % save the newly changed data to the table on the gui
 set(handles.coords_table,'Data',data);
@@ -854,8 +854,8 @@ function DeleteRowPushbutton_Callback(hObject, eventdata, handles)
 
 data = get(handles.coords_table,'Data');
 
-% See if the selectedRow variable exists within the handles struct 
-% (doesn't if no selection performed before clicking or cell has been 
+% See if the selectedRow variable exists within the handles struct
+% (doesn't if no selection performed before clicking or cell has been
 % deselected)
 if(isfield(handles,'selectedRow'))
     if(handles.selectedRow(1) <= 5)
@@ -863,33 +863,33 @@ if(isfield(handles,'selectedRow'))
     else
         % delete selected rows...
         data(handles.selectedRow,:) = [];
-        
+
         % Locations list has now been edited so change bool.
         handles.editedLocationsList = true;
-        
-        % check if have deleted any rows where measurements have already 
+
+        % check if have deleted any rows where measurements have already
         % been made
         if(any(handles.selectedRow <= handles.point_count))
-            
+
             % find out how many of the selected rows are less than the
             % current point_count
             numToDecrement = nnz(handles.selectedRow <= handles.point_count);
-            
+
             % decrement point count to account for number of fewer points
             handles.point_count = handles.point_count - numToDecrement;
-            
+
             % Remove point from graph...
             delete(handles.pointhandle(handles.point_count));
             % and replot axes.
             axis(handles.coord_plot,'equal');
         end
-    end    
+    end
 else
     % Tell user to select a row before inserting
-    errordlg('Please select a row to delete.','Delete Error','modal');    
+    errordlg('Please select a row to delete.','Delete Error','modal');
 end
 % save the newly changed data to the table on the gui
-set(handles.coords_table,'Data',data); 
+set(handles.coords_table,'Data',data);
 
 guidata(hObject,handles);
 
@@ -911,13 +911,13 @@ set(InterfaceObj,'Enable','off');
 
 %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
 if ~isdeployed
-    [filename,pathname] = ... 
+    [filename,pathname] = ...
         uigetfile({'*.txt;*.dat;*.csv', ...
         'Text Files (*.txt) (*.dat) (*.csv)'} ...
         ,['Select Location List File - Each Measurement Point Should be'...
         ' on a New Line']);
 else
-    [filename,pathname] = ... 
+    [filename,pathname] = ...
         uigetfile({'*.txt;*.dat;*.csv', ...
         'Text Files (*.txt) (*.dat) (*.csv)'} ...
         ,['Select Location List File - Each Measurement Point Should be'...
@@ -938,7 +938,7 @@ end
 % Warn user that this will reset all currently gathered data if any has
 % been collected.
 if(handles.point_count > 0)
-    
+
     button = 'No';
 
     button = questdlg({'Warning! Any existing data will be lost.';...
@@ -948,7 +948,7 @@ if(handles.point_count > 0)
     if strcmp(button,'No')
         return
     end
-    
+
 end
 
 disp(['User selected ', fullfile(pathname, filename)])
@@ -961,7 +961,7 @@ FileID = fopen([pathname filename]);
 locations = textscan(FileID,'%s','delimiter','\n');
 
 % append to list of reference points and convert to string array
-locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ... 
+locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ...
     locations{1,1}];
 
 % Close file
@@ -1017,8 +1017,8 @@ InterfaceObj=findobj(handles.figure1,'Enable','on');
 % ... and turn them off.
 set(InterfaceObj,'Enable','off');
 
-% Display warning dialogue before uiputfile if the atlas points have been 
-% editied...        
+% Display warning dialogue before uiputfile if the atlas points have been
+% editied...
 if(handles.editedAtlasPoints)
     uiwait(warndlg({['Note: Atlas points are NOT included in location'...
         ' list files.'];...
@@ -1029,12 +1029,12 @@ end
 
 % Open an "Export" Dialogue
 if ~isdeployed
-    [fileName,pathName,filterIndex] = ... 
+    [fileName,pathName,filterIndex] = ...
         uiputfile({'*.txt;*.dat;*.csv', ...
         'Text Files (*.txt) (*.dat) (*.csv)'} ...
         ,'Export Location List File ...');
 else
-    [fileName,pathName,filterIndex] = ... 
+    [fileName,pathName,filterIndex] = ...
         uiputfile({'*.txt;*.dat;*.csv', ...
         'Text Files (*.txt) (*.dat) (*.csv)'} ...
         ,'Export Location List File ...',handles.userDir);
@@ -1049,17 +1049,17 @@ guidata(hObject,handles);
 
 % Otherwise create a table from the cell array and output that to file.
 if(filterIndex ~= 0) % if == 0 then user selected "cancel" in save dialogue
-    
+
     data = get(handles.coords_table,'Data');
- 
-    % error if outputting only atlas points 
+
+    % error if outputting only atlas points
     if(size(data,1) <= 5)
         errordlg({'Cannot export locations:';...
             'Only atlas point locations have been found.';...
             'Atlas points alone cannot be exported.'},...
             'Export Error','modal');
     else
-       
+
         disp(['Locations saving to ' pathName fileName]);
 
         fileID = fopen([pathName fileName],'wt');
@@ -1071,7 +1071,7 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in save dialogue
 
         fclose(fileID);
         clear fileID;
-    
+
     end
 
 end
@@ -1085,34 +1085,34 @@ function measureThisRowButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% See if the selectedRow variable exists within the handles struct 
-% (doesn't if no selection performed before clicking or cell has been 
+% See if the selectedRow variable exists within the handles struct
+% (doesn't if no selection performed before clicking or cell has been
 % deselected)
 if(isfield(handles,'selectedRow'))
-    
+
     if(length(handles.selectedRow) > 1)
         % Multiple rows/row elements selected
         errordlg({'Multiple rows or row elements have been selected.';...
             'Please select only a single cell.'},...
-            'Selection Error','modal');  
+            'Selection Error','modal');
     elseif(handles.selectedRow <= 5)
         % Atlas point selected
         errordlg(['Atlas Points can only be measured in order'...
             ' and cannot be changed after alignment.'],...
-            'Selection Error','modal');  
+            'Selection Error','modal');
     elseif(handles.point_count >= 5 && ...
-            strcmp(get(handles.HeadAlign,'Enable'),'off')) 
+            strcmp(get(handles.HeadAlign,'Enable'),'off'))
             % (ie all atlas points collected and headalign clicked.)
         % Point selected successfully!
-        
+
         % Set point_count such that the selected row will be measured
         handles.point_count = handles.selectedRow-1;
-        
+
         % Update the "Point to Get" string
         data = get(handles.coords_table,'Data');
         set(handles.infobox,'string',...
                 data(handles.selectedRow,1))
-        
+
     else
         errordlg(['Please finish gathering atlas points then press '...
         '"Align Atlas Points" before selecting individual locations to ',...
@@ -1120,7 +1120,7 @@ if(isfield(handles,'selectedRow'))
     end
 else
     % No point selected
-    
+
     % Tell user to select a row to measure at
     errordlg('Please select a row to gather location data.',...
         'Selection Error','modal');
@@ -1149,20 +1149,20 @@ PreviousData = eventdata.PreviousData;
 
 % warn when editing of rows less than 5 (atlas points)
 if(selectedRow <= 5)
-        
+
     % Check that user is happy to continue
     button = 'Yes';
     button = questdlg({['Warning! About to rename Atlas Point "' ...
         PreviousData, '" to "', NewData, '".']; ...
         '';...
         'Any changes will NOT be reflected in Exported Locations files';...
-        '(exported using the "Export Locations..." button) but WILL be';... 
+        '(exported using the "Export Locations..." button) but WILL be';...
         ['reflected in saved data files (saved using the "Save Data'...
         ' As..." button.)'];...
         '';...
         'Do you wish to continue?'} ...
         ,'Rename Warning','Yes','No','No');
-    
+
     % Set name to previous name prior to editing if user selects "no"
     if(strcmp(button,'No'))
         data = get(handles.coords_table,'Data');
@@ -1173,7 +1173,7 @@ if(selectedRow <= 5)
         % Atlas points have been edited so update bool.
         handles.editedAtlasPoints = true;
     end
-    
+
 end
 % if the previous and the new data are different set editedLocationsList to
 % true.
