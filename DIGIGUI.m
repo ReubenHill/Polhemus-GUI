@@ -199,8 +199,6 @@ end
 % measured head point until the last head point is measured.
 handles.point_count = 0;
 
-handles.n_atlas_pts = 5
-
 % this is true when opening save dialogues for example
 handles.disable_measurements = false;
 
@@ -268,11 +266,31 @@ catch
 
 end
 
-%load other data needed for headpoint plotting
-handles.AtlasLandmarks = load('refpts_landmarks.mat');
-handles.AtlasLandmarks = handles.AtlasLandmarks.pts;
-handles.mesh = load('scalpSurfaceMesh.mat');
-handles.mesh = handles.mesh.mesh;
+%Get default settings
+try
+    load(which('settings.mat'),'atlas_dir');
+catch
+    disp('Settings not found, falling back on default setings.')
+    load(which('default_settings.mat'),'atlas_dir');
+end
+
+handles.atlas_dir = atlas_dir;
+
+noatlas = true;
+while noatlas
+    try
+        %load other data needed for headpoint plotting - these are the required
+        %names after getting atlas_dir from settings.mat
+        [handles.AtlasLandmarks, handles.mesh] = load_atlas_data(handles.atlas_dir);
+        noatlas = false;
+    catch
+        disp('Bad atlas directory, using default');
+        load(which('default_settings.mat'), 'atlas_dir');
+    end
+end
+
+% Include the atlas directory to get necessary functions
+addpath(handles.atlas_dir)
 
 %error test the first serial port functions...
 try
@@ -332,24 +350,38 @@ guidata(hObject, handles);
 
 
 
+% --- Import data from the given atlas directory. The directory must contain a
+% file called mesh.mat which contains a struct called `mesh' within which there
+% is mesh information (see the default example) and a file called
+% atlas_landmarks.mat within which there is an array of landmarks called `pts'.
+function [AtlasLandmarks, mesh] = load_atlas_data(atlas_dir)
+
+AtlasLandmarks = load(fullfile(atlas_dir, 'atlas_landmarks.mat'));
+AtlasLandmarks = AtlasLandmarks.pts;
+mesh = load(fullfile(atlas_dir, 'mesh.mat'));
+mesh = mesh.mesh;
+
+
+
+
 % --- Executes on button press in HeadAlign.
 function HeadAlign_Callback(hObject, eventdata, handles)
 % hObject    handle to HeadAlign (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-if(handles.point_count >= 5)
+if(handles.point_count >= length(handles.AtlasLandmarks))
 
     % extract the locations
     locations = get(handles.coords_table,'Data');
 
     % extract the landmark locations (the first five data points)...
-    landmarks = locations(1:5,2:4);
+    landmarks = locations(1:length(handles.AtlasLandmarks),2:4);
     % ... and convert to ordinary array from cell array
     landmarks = cell2mat(landmarks);
 
     %get transformation matrix to new coord system
-    [TransformMatrix,TransformVector] = GetCoordTransform(landmarks);
+    [TransformMatrix,TransformVector] = CoordinateTransform(landmarks);
     %save tranformation
     handles.TransformMatrix = TransformMatrix;
     handles.TransformVector = TransformVector;
@@ -423,71 +455,6 @@ if(handles.point_count >= 5)
 end
 
 
-%This function outputs a vector to transform inion to origin
-%also outputs rotation transformation matrix to allign the head model to
-%intuitive coordinates.
-%To apply to row vector, the vector should be multiplied by the transpose
-%with the vector on the left
-function [Matrix,vector] = GetCoordTransform(landmarks)
-%calculate lengths between vectors
-
-%these are the untransformed reference points, defined here in case I want
-%to use them
-Nasion = landmarks(1,:);
-Inion = landmarks(2,:);
-Ar = landmarks(3,:);
-Al = landmarks(4,:);
-Cz = landmarks(5,:);
-
-%------TRANSLATION-------
-
-%translate inion to origion
-vector = -Inion;
-
-%translate Al
-Al = Al + vector;
-
-%------ROTATE AL TO Y AXIS-------
-
-%calculate rotation to y axis
-AlToYAxisRot = vrrotvec(Al,[0,1,0]);
-
-%convert to rotation matrix
-AlToYAxisMatrix = vrrotvec2mat(AlToYAxisRot);
-
-%repmat
-% Apply translation and rotation to points
-for k = 1:5
-    landmarks(k,:) = landmarks(k,:)+vector;
-    landmarks(k,:) = landmarks(k,:)*AlToYAxisMatrix';
-end
-
-%------ROTATE AR TO XY PLANE ABOUT INION-AL AXIS-------
-
-% find angle to rotate nasion into XY plane about the new y axis
-[ArToXYRotAngle,~] = cart2pol(landmarks(3,1),landmarks(3,3));
-
-%Find second rotation matrix
-ArToXYMatrix = vrrotvec2mat([0,1,0,ArToXYRotAngle]);
-
-% Apply second rotation to points
-for k = 1:5
-    landmarks(k,:) = landmarks(k,:)*ArToXYMatrix';
-end
-
-%------FINAL ROTATION ABOUT AL-AR AXIS TO ALLIGN INION AND NASION-------
-
-%find angle of nasion to xy plane
-[~,NasionToXYRotAngle,~] = cart2sph(landmarks(1,1),landmarks(1,2),landmarks(1,3));
-%define vector to rotate around (the line joining AL and AR)
-NasionRotVector = landmarks(4,:) - landmarks(3,:);
-%find rotation matrix
-NasionToXYRotMatrix = vrrotvec2mat([NasionRotVector, NasionToXYRotAngle]);
-
-%------OUTPUT FINAL MATRIX-------
-Matrix = NasionToXYRotMatrix*ArToXYMatrix*AlToYAxisMatrix;
-
-
 
 
 
@@ -524,7 +491,7 @@ if(handles.sensors == 2)
 end
 
 %don't run most of the callback if waiting to do alignment...
-if(handles.point_count == handles.n_atlas_pts && ...
+if(handles.point_count == length(handles.AtlasLandmarks) && ...
         strcmp(get(handles.HeadAlign,'Enable'),'on') && ...
         handles.disable_measurements == false)
     % Warn user that points aren't collected until alignment done
@@ -557,10 +524,10 @@ elseif(handles.disable_measurements == false)
 
     % disable head alignment butten for first five points (they are the
     % landmark positions)
-    if(handles.point_count < handles.n_atlas_pts)
+    if(handles.point_count < length(handles.AtlasLandmarks))
         set(handles.HeadAlign,'Enable','off');
-    % enable head allign after n_atlas_pts points...
-    elseif(handles.point_count == handles.n_atlas_pts)
+    % enable head align if have enough points...
+    elseif(handles.point_count == length(handles.AtlasLandmarks))
         set(handles.HeadAlign,'Enable','on');
     % Do coord transform on points measured after landmark points
     else
@@ -596,7 +563,7 @@ elseif(handles.disable_measurements == false)
     %add the measured point to the 3d graph
     hold(handles.coord_plot,'on');
     %save the handle of the point so it can be removed later...
-    if(handles.point_count <= handles.n_atlas_pts)
+    if(handles.point_count <= length(handles.AtlasLandmarks))
         handles.pointhandle(handles.point_count) = plot3(Coords(1), ...
                                             Coords(2),Coords(3), ...
                                             'm.', 'MarkerSize', 30, ...
@@ -624,7 +591,7 @@ function remove_last_pt_Callback(hObject, eventdata, handles)
 
 %don't delete points if alignment already done or at first point
 if (handles.point_count ~= 0)
-    if(handles.point_count ~= handles.n_atlas_pts || strcmp(get(handles.HeadAlign,'Enable'),'on') )
+    if(handles.point_count ~= length(handles.AtlasLandmarks) || strcmp(get(handles.HeadAlign,'Enable'),'on') )
 
         data = get(handles.coords_table,'Data');
 
@@ -650,7 +617,7 @@ if (handles.point_count ~= 0)
         set(handles.infobox,'string', data(handles.point_count+1,1));
 
         % Disable align if now not enough points
-        if(handles.point_count <= handles.n_atlas_pts)
+        if(handles.point_count <= length(handles.AtlasLandmarks))
             set(handles.HeadAlign,'Enable','off');
         end
 
@@ -814,7 +781,7 @@ data = get(handles.coords_table,'Data');
 % (doesn't if no selection performed before clicking or cell has been
 % deselected)
 if(isfield(handles,'selectedRow'))
-    if(handles.selectedRow(end) < handles.n_atlas_pts)
+    if(handles.selectedRow(end) < length(handles.AtlasLandmarks))
         errordlg('Cannot insert or delete Atlas Points','Error','modal');
     else
         % insert above topmost selected row...
@@ -860,7 +827,7 @@ data = get(handles.coords_table,'Data');
 % (doesn't if no selection performed before clicking or cell has been
 % deselected)
 if(isfield(handles,'selectedRow'))
-    if(handles.selectedRow(1) <= handles.n_atlas_pts)
+    if(handles.selectedRow(1) <= length(handles.AtlasLandmarks))
         errordlg('Cannot insert or delete Atlas Points','Edit Error','modal');
     else
         % delete selected rows...
@@ -1055,7 +1022,7 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in save dialogue
     data = get(handles.coords_table,'Data');
 
     % error if outputting only atlas points
-    if(size(data,1) <= handles.n_atlas_pts)
+    if(size(data,1) <= length(handles.AtlasLandmarks))
         errordlg({'Cannot export locations:';...
             'Only atlas point locations have been found.';...
             'Atlas points alone cannot be exported.'},...
@@ -1066,8 +1033,8 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in save dialogue
 
         fileID = fopen([pathName fileName],'wt');
 
-        %write from n_atlas_pts+1 to the last data point
-        for i = handles.n_atlas_pts+1:size(data,1)
+        %write from after the atlas points to the last data point
+        for i = length(handles.AtlasLandmarks)+1:size(data,1)
             fprintf(fileID,'%s\n',data{i,1});
         end
 
@@ -1097,12 +1064,12 @@ if(isfield(handles,'selectedRow'))
         errordlg({'Multiple rows or row elements have been selected.';...
             'Please select only a single cell.'},...
             'Selection Error','modal');
-    elseif(handles.selectedRow <= handles.n_atlas_pts)
+    elseif(handles.selectedRow <= length(handles.AtlasLandmarks))
         % Atlas point selected
         errordlg(['Atlas Points can only be measured in order'...
             ' and cannot be changed after alignment.'],...
             'Selection Error','modal');
-    elseif(handles.point_count >= handles.n_atlas_pts && ...
+    elseif(handles.point_count >= length(handles.AtlasLandmarks) && ...
             strcmp(get(handles.HeadAlign,'Enable'),'off'))
             % (ie all atlas points collected and headalign clicked.)
         % Point selected successfully!
@@ -1149,8 +1116,8 @@ selectedRow = eventdata.Indices(:,1);
 NewData = eventdata.NewData;
 PreviousData = eventdata.PreviousData;
 
-% warn when editing of rows less than n_atlas_pts
-if(selectedRow <= handles.n_atlas_pts)
+% warn when editing of rows less than number of atlas points
+if(selectedRow <= length(handles.AtlasLandmarks))
 
     % Check that user is happy to continue
     button = 'Yes';

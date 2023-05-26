@@ -1,6 +1,6 @@
 % Head mesh transformation sequence for polhemus gui
 % landmarks = Inion, Nasion, Ar, Al, Cz measured with Polhemus
-% pts = landmarks of atlas (from refpts_landmarks.mat)
+% pts = landmarks of atlas (from default_atlas/atlas_landmarks.mat)
 % mesh = adult atlas scalp mesh
 
 [A,B] = affinemap(pts,landmarks);
