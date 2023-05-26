@@ -199,6 +199,8 @@ end
 % measured head point until the last head point is measured.
 handles.point_count = 0;
 
+handles.n_atlas_pts = 5
+
 % this is true when opening save dialogues for example
 handles.disable_measurements = false;
 
@@ -522,7 +524,7 @@ if(handles.sensors == 2)
 end
 
 %don't run most of the callback if waiting to do alignment...
-if(handles.point_count == 5 && ...
+if(handles.point_count == handles.n_atlas_pts && ...
         strcmp(get(handles.HeadAlign,'Enable'),'on') && ...
         handles.disable_measurements == false)
     % Warn user that points aren't collected until alignment done
@@ -555,10 +557,10 @@ elseif(handles.disable_measurements == false)
 
     % disable head alignment butten for first five points (they are the
     % landmark positions)
-    if(handles.point_count < 5)
+    if(handles.point_count < handles.n_atlas_pts)
         set(handles.HeadAlign,'Enable','off');
-    % enable head allign after 5 points...
-    elseif(handles.point_count == 5)
+    % enable head allign after n_atlas_pts points...
+    elseif(handles.point_count == handles.n_atlas_pts)
         set(handles.HeadAlign,'Enable','on');
     % Do coord transform on points measured after landmark points
     else
@@ -594,7 +596,7 @@ elseif(handles.disable_measurements == false)
     %add the measured point to the 3d graph
     hold(handles.coord_plot,'on');
     %save the handle of the point so it can be removed later...
-    if(handles.point_count <= 5)
+    if(handles.point_count <= handles.n_atlas_pts)
         handles.pointhandle(handles.point_count) = plot3(Coords(1), ...
                                             Coords(2),Coords(3), ...
                                             'm.', 'MarkerSize', 30, ...
@@ -622,7 +624,7 @@ function remove_last_pt_Callback(hObject, eventdata, handles)
 
 %don't delete points if alignment already done or at first point
 if (handles.point_count ~= 0)
-    if(handles.point_count ~= 5 || strcmp(get(handles.HeadAlign,'Enable'),'on') )
+    if(handles.point_count ~= handles.n_atlas_pts || strcmp(get(handles.HeadAlign,'Enable'),'on') )
 
         data = get(handles.coords_table,'Data');
 
@@ -648,7 +650,7 @@ if (handles.point_count ~= 0)
         set(handles.infobox,'string', data(handles.point_count+1,1));
 
         % Disable align if now not enough points
-        if(handles.point_count <= 5)
+        if(handles.point_count <= handles.n_atlas_pts)
             set(handles.HeadAlign,'Enable','off');
         end
 
@@ -812,7 +814,7 @@ data = get(handles.coords_table,'Data');
 % (doesn't if no selection performed before clicking or cell has been
 % deselected)
 if(isfield(handles,'selectedRow'))
-    if(handles.selectedRow(end) < 5)
+    if(handles.selectedRow(end) < handles.n_atlas_pts)
         errordlg('Cannot insert or delete Atlas Points','Error','modal');
     else
         % insert above topmost selected row...
@@ -858,7 +860,7 @@ data = get(handles.coords_table,'Data');
 % (doesn't if no selection performed before clicking or cell has been
 % deselected)
 if(isfield(handles,'selectedRow'))
-    if(handles.selectedRow(1) <= 5)
+    if(handles.selectedRow(1) <= handles.n_atlas_pts)
         errordlg('Cannot insert or delete Atlas Points','Edit Error','modal');
     else
         % delete selected rows...
@@ -1053,7 +1055,7 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in save dialogue
     data = get(handles.coords_table,'Data');
 
     % error if outputting only atlas points
-    if(size(data,1) <= 5)
+    if(size(data,1) <= handles.n_atlas_pts)
         errordlg({'Cannot export locations:';...
             'Only atlas point locations have been found.';...
             'Atlas points alone cannot be exported.'},...
@@ -1064,8 +1066,8 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in save dialogue
 
         fileID = fopen([pathName fileName],'wt');
 
-        %write from the 6th to the last data point
-        for i = 5+1:size(data,1)
+        %write from n_atlas_pts+1 to the last data point
+        for i = handles.n_atlas_pts+1:size(data,1)
             fprintf(fileID,'%s\n',data{i,1});
         end
 
@@ -1095,12 +1097,12 @@ if(isfield(handles,'selectedRow'))
         errordlg({'Multiple rows or row elements have been selected.';...
             'Please select only a single cell.'},...
             'Selection Error','modal');
-    elseif(handles.selectedRow <= 5)
+    elseif(handles.selectedRow <= handles.n_atlas_pts)
         % Atlas point selected
         errordlg(['Atlas Points can only be measured in order'...
             ' and cannot be changed after alignment.'],...
             'Selection Error','modal');
-    elseif(handles.point_count >= 5 && ...
+    elseif(handles.point_count >= handles.n_atlas_pts && ...
             strcmp(get(handles.HeadAlign,'Enable'),'off'))
             % (ie all atlas points collected and headalign clicked.)
         % Point selected successfully!
@@ -1147,8 +1149,8 @@ selectedRow = eventdata.Indices(:,1);
 NewData = eventdata.NewData;
 PreviousData = eventdata.PreviousData;
 
-% warn when editing of rows less than 5 (atlas points)
-if(selectedRow <= 5)
+% warn when editing of rows less than n_atlas_pts
+if(selectedRow <= handles.n_atlas_pts)
 
     % Check that user is happy to continue
     button = 'Yes';
