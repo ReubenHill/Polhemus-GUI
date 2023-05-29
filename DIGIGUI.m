@@ -56,7 +56,7 @@ function varargout = DIGIGUI(varargin)
 
 % Edit the above text to modify the response to help DIGIGUI
 
-% Last Modified by GUIDE v2.5 24-Jun-2016 14:56:20
+% Last Modified by GUIDE v2.5 29-May-2023 15:00:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -207,6 +207,36 @@ handles.editedLocationsList = false;
 % this is true if the atlas point names has been edited.
 handles.editedAtlasPoints = false;
 
+%Get default settings
+try
+    load(which('settings.mat'),'atlas_dir');
+catch
+    disp('Settings not found, falling back on default setings.')
+    load(which('default_settings.mat'),'atlas_dir');
+end
+
+noatlas = true;
+while noatlas
+    try
+        %load other data needed for headpoint plotting - these are the required
+        %names after getting atlas_dir from settings.mat
+        [landmarks, landmark_names, mesh] = load_atlas_data(atlas_dir);
+        if good_atlas_data(landmarks, landmark_names, mesh)
+            handles.atlas_dir = atlas_dir;
+            handles.AtlasLandmarks = landmarks;
+            handles.AtlasLandmarkNames = landmark_names;
+            handles.mesh = mesh;
+            noatlas = false;
+        end
+    catch
+        disp('Bad atlas directory, using default');
+        load(which('default_settings.mat'), 'atlas_dir');
+    end
+end
+
+% Include the atlas directory to get necessary functions
+addpath(handles.atlas_dir);
+
 %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
 
 try
@@ -251,8 +281,7 @@ catch
     locations = textscan(FileID,'%s','delimiter','\n');
 
     % append to list of reference points and convert to string array
-    locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ...
-        locations{1,1}];
+    locations = [handles.AtlasLandmarkNames; locations{1,1}];
 
     % Close file
     fclose(FileID);
@@ -265,35 +294,6 @@ catch
     end
 
 end
-
-%Get default settings
-try
-    load(which('settings.mat'),'atlas_dir');
-catch
-    disp('Settings not found, falling back on default setings.')
-    load(which('default_settings.mat'),'atlas_dir');
-end
-
-noatlas = true;
-while noatlas
-    try
-        %load other data needed for headpoint plotting - these are the required
-        %names after getting atlas_dir from settings.mat
-        [landmarks, mesh] = load_atlas_data(atlas_dir);
-        if good_atlas_data(landmarks, mesh)
-            handles.atlas_dir = atlas_dir;
-            handles.AtlasLandmarks = landmarks;
-            handles.mesh = mesh;
-            noatlas = false;
-        end
-    catch
-        disp('Bad atlas directory, using default');
-        load(which('default_settings.mat'), 'atlas_dir');
-    end
-end
-
-% Include the atlas directory to get necessary functions
-addpath(handles.atlas_dir);
 
 %error test the first serial port functions...
 try
@@ -356,10 +356,12 @@ guidata(hObject, handles);
 % --- Import data from the given atlas directory. The directory must contain a
 % file called mesh.mat which contains a struct called `mesh' within which there
 % is mesh information (see the default example) and a file called
-% atlas_landmarks.mat within which there is an array of landmarks called `pts'.
-function [landmarks, mesh] = load_atlas_data(atlas_dir)
+% atlas_landmarks.mat within which there is an array of landmarks called `pts'
+% and a cell list of strings called `names'.
+function [landmarks, landmark_names, mesh] = load_atlas_data(atlas_dir)
 
 landmarks = load(fullfile(atlas_dir, 'atlas_landmarks.mat'));
+landmark_names = landmarks.names;
 landmarks = landmarks.pts;
 mesh = load(fullfile(atlas_dir, 'mesh.mat'));
 mesh = mesh.mesh;
@@ -368,11 +370,13 @@ mesh = mesh.mesh;
 
 
 % --- Check atlas data matches requried specification
-function [good] = good_atlas_data(landmarks, mesh)
+function [good] = good_atlas_data(landmarks, landmark_names, mesh)
 
 good = false;
 if length(landmarks) < 4
     errordlg('Too few landmark points in atlas data!', 'atlas_landmarks.mat');
+elseif length(landmark_names) ~= length(landmarks)
+    errordlg('Too few/many landmark names!', 'atlas_landmarks.mat');
 elseif ~all([mesh.nnode, 3] == size(mesh.node))
     errordlg('Node matrix should be nnode by 3 matrix!', 'mesh.mat');
 elseif 3 ~= size(mesh.face, 2)
@@ -962,8 +966,7 @@ FileID = fopen([pathname filename]);
 locations = textscan(FileID,'%s','delimiter','\n');
 
 % append to list of reference points and convert to string array
-locations = ['Nasion';'Inion';'Ar';'Al';'Cz'; ...
-    locations{1,1}];
+locations = [handles.AtlasLandmarkNames; locations{1,1}];
 
 % Close file
 fclose(FileID);
@@ -1183,3 +1186,132 @@ if(~strcmp(PreviousData,NewData))
 end
 
 guidata(hObject,handles);
+
+
+% --------------------------------------------------------------------
+function menu_file_import_atlas_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_file_import_atlas (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% disable measurements
+handles.disable_measurements = true;
+guidata(hObject,handles);
+
+% Find interface objects that are set to 'on' i.e. enabled...
+InterfaceObj=findobj(handles.figure1,'Enable','on');
+% ... and turn them off.
+set(InterfaceObj,'Enable','off');
+
+%--------------------DIRECTORY INPUT-----------------------
+atlas_dir = uigetdir(handles.userDir, ['Select atlas directory']);
+
+% Re-enable the interface objects.
+set(InterfaceObj,'Enable','on');
+
+% re-enable measurements
+handles.disable_measurements = false;
+guidata(hObject,handles);
+
+% user selected cancel...
+if isequal(atlas_dir,0)
+    return
+end
+
+% Warn user that this will reset all currently gathered data if any has
+% been collected.
+if(handles.point_count > 0)
+
+    button = 'No';
+
+    button = questdlg({'Warning! Any existing data will be lost.';...
+        'Do you wish to continue?'},'Data Warning','Yes','No','No');
+
+    % user selected cancel...
+    if strcmp(button,'No')
+        return
+    end
+
+end
+
+% Check atlas data is good
+noatlas = true;
+while noatlas
+    try
+        %load other data needed for headpoint plotting - these are the required
+        %names after getting atlas_dir from settings.mat
+        [landmarks, landmark_names, mesh] = load_atlas_data(atlas_dir);
+        if good_atlas_data(landmarks, landmark_names, mesh)
+            noatlas = false;
+        else
+            return
+        end
+    catch
+        errordlg('Bad atlas directory!', atlas_dir);
+        return
+    end
+end
+
+% save our new mesh and landmarks
+handles.AtlasLandmarks = landmarks;
+handles.AtlasLandmarksNames = landmark_names;
+handles.mesh = mesh;
+
+% Remove the old atlas directory from the path and add the new one to get
+% necessary functions
+rmpath(handles.atlas_dir)
+handles.atlas_dir = atlas_dir;
+addpath(handles.atlas_dir);
+
+% Reset points counter
+handles.point_count = 0;
+
+% The landmark names are now the nes locations which we save
+locations = landmark_names;
+
+% Save locations variable to be loaded next time
+if ~isdeployed
+    save('savedLocationNames.mat','locations');
+else
+    save(fullfile(ctfroot,'savedLocationNames.mat'),'locations');
+end
+
+% Display initial point to find on GUI
+set(handles.infobox,'string',locations(1,1));
+
+% display locations on table in gui
+set(handles.coords_table,'Data',locations);
+
+% if head align button has been enabled set to disabled.
+if(strcmp(get(handles.HeadAlign,'Enable'),'on'))
+    set(handles.HeadAlign,'Enable','off');
+end
+
+% clear previous measurements and headmap from plot...
+cla(handles.coord_plot);
+% and replot axes.
+axis(handles.coord_plot,'equal');
+
+guidata(hObject,handles);
+
+
+% --------------------------------------------------------------------
+function menu_file_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_file (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function menu_file_import_locations_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_file_import_locations (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+ImportHeadpoints_Callback(hObject, eventdata, handles)
+
+% --------------------------------------------------------------------
+function menu_file_export_locations_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_file_export_locations (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+ExportHeadpoints_Callback(hObject, eventdata, handles)
