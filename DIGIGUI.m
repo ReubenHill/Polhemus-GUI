@@ -274,15 +274,14 @@ catch
     load(which('default_settings.mat'),'atlas_dir');
 end
 
-handles.atlas_dir = atlas_dir;
-
 noatlas = true;
 while noatlas
     try
         %load other data needed for headpoint plotting - these are the required
         %names after getting atlas_dir from settings.mat
-        [landmarks, mesh] = load_atlas_data(handles.atlas_dir);
+        [landmarks, mesh] = load_atlas_data(atlas_dir);
         if good_atlas_data(landmarks, mesh)
+            handles.atlas_dir = atlas_dir;
             handles.AtlasLandmarks = landmarks;
             handles.mesh = mesh;
             noatlas = false;
@@ -294,7 +293,7 @@ while noatlas
 end
 
 % Include the atlas directory to get necessary functions
-addpath(handles.atlas_dir)
+addpath(handles.atlas_dir);
 
 %error test the first serial port functions...
 try
@@ -486,6 +485,16 @@ function CloseFcn(source,event,handles)
 %closes the serial port
 
 handles = guidata(handles.figure1);
+
+% save settings
+if isfield(handles, 'atlas_dir')
+    atlas_dir = handles.atlas_dir;
+    if ~isdeployed
+        save('settings.mat', 'atlas_dir');
+    else
+        save(fullfile(ctfroot,'settings.mat'), 'atlas_dir');
+    end
+end
 
 %close port only if not closed
 if(isfield(handles,'COMport'))
