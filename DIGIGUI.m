@@ -281,8 +281,12 @@ while noatlas
     try
         %load other data needed for headpoint plotting - these are the required
         %names after getting atlas_dir from settings.mat
-        [handles.AtlasLandmarks, handles.mesh] = load_atlas_data(handles.atlas_dir);
-        noatlas = false;
+        [landmarks, mesh] = load_atlas_data(handles.atlas_dir);
+        if good_atlas_data(landmarks, mesh)
+            handles.AtlasLandmarks = landmarks;
+            handles.mesh = mesh;
+            noatlas = false;
+        end
     catch
         disp('Bad atlas directory, using default');
         load(which('default_settings.mat'), 'atlas_dir');
@@ -354,12 +358,31 @@ guidata(hObject, handles);
 % file called mesh.mat which contains a struct called `mesh' within which there
 % is mesh information (see the default example) and a file called
 % atlas_landmarks.mat within which there is an array of landmarks called `pts'.
-function [AtlasLandmarks, mesh] = load_atlas_data(atlas_dir)
+function [landmarks, mesh] = load_atlas_data(atlas_dir)
 
-AtlasLandmarks = load(fullfile(atlas_dir, 'atlas_landmarks.mat'));
-AtlasLandmarks = AtlasLandmarks.pts;
+landmarks = load(fullfile(atlas_dir, 'atlas_landmarks.mat'));
+landmarks = landmarks.pts;
 mesh = load(fullfile(atlas_dir, 'mesh.mat'));
 mesh = mesh.mesh;
+
+
+
+
+% --- Check atlas data matches requried specification
+function [good] = good_atlas_data(landmarks, mesh)
+
+good = false;
+if length(landmarks) < 4
+    errordlg('Too few landmark points in atlas data!', 'atlas_landmarks.mat');
+elseif ~all([mesh.nnode, 3] == size(mesh.node))
+    errordlg('Node matrix should be nnode by 3 matrix!', 'mesh.mat');
+elseif 3 ~= size(mesh.face, 2)
+    errordlg('Face matrix should be an m by 3 matrix!', 'mesh.mat');
+elseif any(max(mesh.face)) > mesh.nnode
+    errordlg('Face matrix contains indices which exceed the dimensions of the node matrix!', 'mesh.mat');
+else
+    good = true;
+end
 
 
 
