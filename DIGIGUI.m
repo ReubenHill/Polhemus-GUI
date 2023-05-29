@@ -207,6 +207,8 @@ handles.editedLocationsList = false;
 % this is true if the atlas point names has been edited.
 handles.editedAtlasPoints = false;
 
+handles.warningDistance = 1;
+
 %Get default settings
 try
     load(which('settings.mat'),'atlas_dir');
@@ -594,6 +596,18 @@ elseif(handles.disable_measurements == false)
             % (Set to the next position on the table)
     else
         set(handles.infobox,'string','End of locations list reached');
+    end
+
+    if handles.point_count > 1
+        % extract the previous point for comparison
+        last_point = cell2mat(data(handles.point_count-1, 2:4));
+        distance = norm(Coords - last_point);
+        if distance < handles.warningDistance
+            last_point = data(handles.point_count-1, 1);
+            this_point = data(handles.point_count, 1);
+            msg = sprintf('%s measurement was only %f cm from %s measurement!', this_point{1}, distance, last_point{1});
+            warndlg(msg, 'Double tap warning');
+        end
     end
 
     %add the measured point to the 3d graph
