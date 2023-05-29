@@ -56,7 +56,7 @@ function varargout = DIGIGUI(varargin)
 
 % Edit the above text to modify the response to help DIGIGUI
 
-% Last Modified by GUIDE v2.5 29-May-2023 15:00:47
+% Last Modified by GUIDE v2.5 29-May-2023 16:41:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -207,16 +207,26 @@ handles.editedLocationsList = false;
 % this is true if the atlas point names has been edited.
 handles.editedAtlasPoints = false;
 
-handles.warningDistance = 1;
+handles.warning_distance = 0.1;
+handles.atlas_dir = 'default_atlas';
 
 %Get default settings
 try
+    load(which('settings.mat'),'warning_distance');
+    test = warning_distance; % use here to trigger error if missing
     load(which('settings.mat'),'atlas_dir');
+    test = atlas_dir;
 catch
-    disp('Settings not found, falling back on default setings.')
+    uiwait(errordlg('Settings missing or not found, falling back on default settings.','Setting Error'));
+    load(which('default_settings.mat'),'warning_distance');
+    test = warning_distance;
     load(which('default_settings.mat'),'atlas_dir');
+    test = atlas_dir;
 end
 
+handles.warning_distance = warning_distance;
+
+%Import atlas
 noatlas = true;
 while noatlas
     try
@@ -496,9 +506,17 @@ handles = guidata(handles.figure1);
 if isfield(handles, 'atlas_dir')
     atlas_dir = handles.atlas_dir;
     if ~isdeployed
-        save('settings.mat', 'atlas_dir');
+        save('settings.mat', 'atlas_dir', '-append');
     else
-        save(fullfile(ctfroot,'settings.mat'), 'atlas_dir');
+        save(fullfile(ctfroot,'settings.mat'), 'atlas_dir', '-append');
+    end
+end
+if isfield(handles, 'warning_distance')
+    warning_distance = handles.warning_distance;
+    if ~isdeployed
+        save('settings.mat', 'warning_distance', '-append');
+    else
+        save(fullfile(ctfroot,'settings.mat'), 'warning_distance', '-append');
     end
 end
 
@@ -602,10 +620,10 @@ elseif(handles.disable_measurements == false)
         % extract the previous point for comparison
         last_point = cell2mat(data(handles.point_count-1, 2:4));
         distance = norm(Coords - last_point);
-        if distance < handles.warningDistance
+        if distance < handles.warning_distance
             last_point = data(handles.point_count-1, 1);
             this_point = data(handles.point_count, 1);
-            msg = sprintf('%s measurement was only %f cm from %s measurement!', this_point{1}, distance, last_point{1});
+            msg = sprintf('%s measurement was only %0.2g cm from %s measurement!\nCurrent warning distance is %0.2g cm. This can be changed in the options.', this_point{1}, distance, last_point{1}, handles.warning_distance);
             warndlg(msg, 'Double tap warning');
         end
     end
@@ -1329,3 +1347,36 @@ function menu_file_export_locations_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 ExportHeadpoints_Callback(hObject, eventdata, handles)
+
+
+% --------------------------------------------------------------------
+function menu_options_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_options (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function menu_options_double_tap_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_options_double_tap (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% disable measurements
+handles.disable_measurements = true;
+guidata(hObject,handles);
+
+% Find interface objects that are set to 'on' i.e. enabled...
+InterfaceObj=findobj(handles.figure1,'Enable','on');
+% ... and turn them off.
+set(InterfaceObj,'Enable','off');
+
+%--------------------DIALOGUE BOX-----------------------
+handles.warning_distance = doubletapdialog(handles.warning_distance);
+
+% Re-enable the interface objects.
+set(InterfaceObj,'Enable','on');
+
+% re-enable measurements
+handles.disable_measurements = false;
+guidata(hObject,handles);
