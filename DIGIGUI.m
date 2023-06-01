@@ -238,6 +238,7 @@ while noatlas
             handles.AtlasLandmarks = landmarks;
             handles.AtlasLandmarkNames = landmark_names;
             handles.mesh = mesh;
+            handles.landmark_measurements = zeros(length(landmarks), 3);
             noatlas = false;
         end
     catch
@@ -413,10 +414,9 @@ if(handles.point_count >= length(handles.AtlasLandmarks))
     % extract the locations
     locations = get(handles.coords_table,'Data');
 
-    % extract the landmark locations (the first five data points)...
-    landmarks = locations(1:length(handles.AtlasLandmarks),2:4);
-    % ... and convert to ordinary array from cell array
-    landmarks = cell2mat(landmarks);
+    % Get original landmark measurements (in case already done a coord
+    % transform and redoing atlas measurements)
+    landmarks = handles.landmark_measurements;
 
     %get transformation matrix to new coord system
     [TransformMatrix,TransformVector] = CoordinateTransform(landmarks);
@@ -467,6 +467,11 @@ if(handles.point_count >= length(handles.AtlasLandmarks))
     mesh_trans = handles.mesh;
     mesh_trans.node = affine_trans_RJC(handles.mesh.node,A,B);
 
+    % Remove any existing head plot
+    if isfield(handles, 'headplot')
+        delete(handles.headplot)
+    end
+
     %Then plot the transformed mesh as visual reference for further points...
     %note: this plots the head model
     hold on
@@ -482,7 +487,6 @@ if(handles.point_count >= length(handles.AtlasLandmarks))
     lighting gouraud;
     axis equal;
     hold off;
-
 
     % disable  headalign button
     set(hObject,'Enable','off');
@@ -589,15 +593,20 @@ elseif(handles.disable_measurements == false)
         Coords = Coords(1,:) - Coords(2,:);
     end
 
-    % disable head alignment butten for first five points (they are the
-    % landmark positions)
+    % disable head alignment butten until we have all landmark positions
     if(handles.point_count < length(handles.AtlasLandmarks))
         set(handles.HeadAlign,'Enable','off');
     % enable head align if have enough points...
-    elseif(handles.point_count == length(handles.AtlasLandmarks))
+    elseif handles.point_count == length(handles.AtlasLandmarks)
         set(handles.HeadAlign,'Enable','on');
-    % Do coord transform on points measured after landmark points
-    else
+    end
+    % Save original coordinates of landmark positions if measuring those
+    if(handles.point_count <= length(handles.AtlasLandmarks))
+        handles.landmark_measurements(handles.point_count, :) = Coords;
+    end
+    % Do coord transform on points measured after alignment - i.e. if
+    % there is a head plotted.
+    if isfield(handles, 'headplot')
         Coords = Coords + handles.TransformVector;
         Coords = Coords*handles.TransformMatrix';
     end
@@ -630,12 +639,17 @@ elseif(handles.disable_measurements == false)
     if handles.point_count > 1
         % extract the previous point for comparison
         last_point = cell2mat(data(handles.point_count-1, 2:4));
-        distance = norm(Coords - last_point);
-        if distance < handles.warning_distance
-            last_point = data(handles.point_count-1, 1);
-            this_point = data(handles.point_count, 1);
-            msg = sprintf('%s measurement was only %0.2g cm from %s measurement!\nCurrent warning distance is %0.2g cm. This can be changed in the options.', this_point{1}, distance, last_point{1}, handles.warning_distance);
-            warndlg(msg, 'Double tap warning');
+        % If our last point is empty then we can't do a comparison. This
+        % will happen when you select a different row to measure, in which
+        % case a double tap isn't going to happen
+        if length(last_point) == 3
+            distance = norm(Coords - last_point);
+            if distance < handles.warning_distance
+                last_point = data(handles.point_count-1, 1);
+                this_point = data(handles.point_count, 1);
+                msg = sprintf('%s measurement was only %0.2g cm from %s measurement!\nCurrent warning distance is %0.2g cm. This can be changed in the options.', this_point{1}, distance, last_point{1}, handles.warning_distance);
+                warndlg(msg, 'Double tap warning');
+            end
         end
     end
 
@@ -670,40 +684,38 @@ function remove_last_pt_Callback(hObject, eventdata, handles)
 
 %don't delete points if alignment already done or at first point
 if (handles.point_count ~= 0)
-    if(handles.point_count ~= length(handles.AtlasLandmarks) || strcmp(get(handles.HeadAlign,'Enable'),'on') )
 
-        data = get(handles.coords_table,'Data');
+    data = get(handles.coords_table,'Data');
 
-        % Set the last measured values of x, y and z to be empty cells
-        data{handles.point_count,2} = []; % x
-        data{handles.point_count,3} = []; % y
-        data{handles.point_count,4} = []; % z
+    % Set the last measured values of x, y and z to be empty cells
+    data{handles.point_count,2} = []; % x
+    data{handles.point_count,3} = []; % y
+    data{handles.point_count,4} = []; % z
 
-        set(handles.coords_table,'Data',data);
+    set(handles.coords_table,'Data',data);
 
-        % Remove point from graph...
-        delete(handles.pointhandle(handles.point_count));
-        % and replot axes.
-        axis(handles.coord_plot,'equal');
+    % Remove point from graph...
+    delete(handles.pointhandle(handles.point_count));
+    % and replot axes.
+    axis(handles.coord_plot,'equal');
 
-        % Decrement point_count so next measurement is of the point which
-        % has just been deleted
-        handles.point_count = handles.point_count - 1;
+    % Decrement point_count so next measurement is of the point which
+    % has just been deleted
+    handles.point_count = handles.point_count - 1;
 
-        data = get(handles.coords_table,'Data');
+    data = get(handles.coords_table,'Data');
 
-        % update next point to look for string
-        set(handles.infobox,'string', data(handles.point_count+1,1));
+    % update next point to look for string
+    set(handles.infobox,'string', data(handles.point_count+1,1));
 
-        % Disable align if now not enough points
-        if(handles.point_count <= length(handles.AtlasLandmarks))
-            set(handles.HeadAlign,'Enable','off');
-        end
-
-        % Update handles structure
-        guidata(handles.figure1,handles);
-
+    % Disable align if now not enough points
+    if(handles.point_count <= length(handles.AtlasLandmarks))
+        set(handles.HeadAlign,'Enable','off');
     end
+
+    % Update handles structure
+    guidata(handles.figure1,handles);
+
 end
 
 
