@@ -500,9 +500,20 @@ function CloseFcn(source,event,handles)
 %my user-defined close request function
 %closes the serial port
 
-handles = guidata(handles.figure1);
+try
+    handles = guidata(handles.figure1);
+catch
+    handles = struct([]);
+end
 
 % save settings
+if exist('settings.mat', 'file') ~= 2
+    if ~isdeployed
+        save('settings.mat'); % this creates a new file
+    else
+        save(fullfile(ctfroot,'settings.mat'));
+    end
+end
 if isfield(handles, 'atlas_dir')
     atlas_dir = handles.atlas_dir;
     if ~isdeployed
