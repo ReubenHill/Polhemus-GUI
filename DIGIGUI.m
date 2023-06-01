@@ -56,7 +56,7 @@ function varargout = DIGIGUI(varargin)
 
 % Edit the above text to modify the response to help DIGIGUI
 
-% Last Modified by GUIDE v2.5 29-May-2023 16:41:39
+% Last Modified by GUIDE v2.5 01-Jun-2023 13:53:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1380,3 +1380,18 @@ set(InterfaceObj,'Enable','on');
 % re-enable measurements
 handles.disable_measurements = false;
 guidata(hObject,handles);
+
+
+% --------------------------------------------------------------------
+function menu_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function menu_edit_undo_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_edit_undo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+remove_last_pt_Callback(hObject, eventdata, handles)
