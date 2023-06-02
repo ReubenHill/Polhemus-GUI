@@ -24,7 +24,7 @@ function choice = doubletapdialog(currentval)
            'String','Close',...
            'Callback','delete(gcf)');
 
-    choice = 'Red';
+    choice = currentval;
 
     % Wait for d to close before running to completion
     uiwait(d);

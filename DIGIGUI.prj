@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="222460721" file="C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\DIGIGUI.prj" location="C:\Users\Reuben\Documents\GitHub\Polhemus-GUI" name="DIGIGUI" preferred-package-location="C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\DIGIGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="187533882" file="C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\DIGIGUI.prj" location="C:\Users\Reuben\Documents\GitHub\Polhemus-GUI" name="DIGIGUI" preferred-package-location="C:\Users\Reuben\Documents\GitHub\Polhemus-GUI\DIGIGUI\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>DIGIGUI</param.appname>
     <param.icon>${PROJECT_ROOT}\DIGIGUI_resources\icon.ico</param.icon>
     <param.icons>
@@ -8,12 +8,12 @@
       <file>${PROJECT_ROOT}\DIGIGUI_resources\icon_24.png</file>
       <file>${PROJECT_ROOT}\DIGIGUI_resources\icon_16.png</file>
     </param.icons>
-    <param.version>1.2</param.version>
+    <param.version>1.3</param.version>
     <param.authnamewatermark>Reuben Nixon-Hill</param.authnamewatermark>
     <param.email>reuben.w.hill@gmail.com</param.email>
     <param.company />
     <param.summary>A graphical user interface for use with the Polhemus Patriot Digitiser at a baud rate of 115200.</param.summary>
-    <param.description>Version 1.2.1.
+    <param.description>Version 1.3.0-alpha.
 Copyright © 2023 Reuben Nixon-Hill, MATLAB® © 1984 - 2016 The MathWorks, Inc.
 This package is licenced under the MIT Licence (see LICENCE.txt) and was created using MATLAB® compiler.</param.description>
     <param.screenshot />
@@ -38,9 +38,9 @@ This package is licenced under the MIT Licence (see LICENCE.txt) and was created
     <param.web.mcr.name>DIGIGUI_web</param.web.mcr.name>
     <param.package.mcr.name>DIGIGUI_mcr</param.package.mcr.name>
     <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
-    <param.windows.command.prompt>true</param.windows.command.prompt>
-    <param.create.log>false</param.create.log>
-    <param.log.file>log</param.log.file>
+    <param.windows.command.prompt>false</param.windows.command.prompt>
+    <param.create.log>true</param.create.log>
+    <param.log.file>log.txt</param.log.file>
     <unset>
       <param.company />
       <param.screenshot />
@@ -61,18 +61,20 @@ This package is licenced under the MIT Licence (see LICENCE.txt) and was created
       <param.package.mcr />
       <param.no.mcr />
       <param.no.mcr.name />
-      <param.windows.command.prompt />
-      <param.create.log />
     </unset>
     <fileset.main>
       <file>${PROJECT_ROOT}\DIGIGUI.m</file>
     </fileset.main>
     <fileset.resources>
-      <file>${PROJECT_ROOT}\DIGIGUI.fig</file>
-      <file>${PROJECT_ROOT}\refpts_landmarks.mat</file>
-      <file>${PROJECT_ROOT}\scalpSurfaceMesh.mat</file>
+      <file>${PROJECT_ROOT}\default_atlas\atlas_landmarks.mat</file>
+      <file>${PROJECT_ROOT}\default_atlas\CoordinateTransform.m</file>
+      <file>${PROJECT_ROOT}\default_atlas\mesh.mat</file>
+      <file>${PROJECT_ROOT}\default_settings.mat</file>
+      <file>${PROJECT_ROOT}\savedLocationNames.mat</file>
     </fileset.resources>
     <fileset.package>
+      <file>${PROJECT_ROOT}\default_atlas</file>
+      <file>${PROJECT_ROOT}\expected_coordinates_example.txt</file>
       <file>${PROJECT_ROOT}\LICENCE.txt</file>
       <file>${PROJECT_ROOT}\Locations Example.txt</file>
       <file>${PROJECT_ROOT}\Readme.txt</file>
@@ -80,6 +82,9 @@ This package is licenced under the MIT Licence (see LICENCE.txt) and was created
     <fileset.depfun>
       <file>${PROJECT_ROOT}\affine_trans_RJC.m</file>
       <file>${PROJECT_ROOT}\affinemap.m</file>
+      <file>${PROJECT_ROOT}\checkmark.tif</file>
+      <file>${PROJECT_ROOT}\DIGIGUI.fig</file>
+      <file>${PROJECT_ROOT}\doubletapdialog.m</file>
       <file>${PROJECT_ROOT}\FindPatriotSerial.m</file>
     </fileset.depfun>
     <build-deliverables>

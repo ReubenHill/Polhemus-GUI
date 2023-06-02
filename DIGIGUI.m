@@ -3,7 +3,7 @@ function varargout = DIGIGUI(varargin)
 % Copyright (C) Reuben W. Nixon-Hill (formerly Reuben W. Hill)
 %
 % -------------------------------------------------------------------------
-%                   -- DIGIGUI v1.2.1 for Matlab R2016b  --
+%                   -- DIGIGUI v1.3.0-alpha for Matlab R2016b  --
 % -------------------------------------------------------------------------
 %
 % For the Polhemus PATRIOT digitiser, attached to stylus pen with button.
@@ -16,9 +16,9 @@ function varargout = DIGIGUI(varargin)
 %
 % Points are digitised by pressing the stylus button.
 %
-% After getting 5 reference cardinal points 'Nasion','Inion','Ar','Al' and
-% 'Cz', an Atlas reference baby head, with these points marked, is mapped
-% onto the graph display of points.
+% The default atlas requires 5 reference cardinal points: 'Nasion','Inion',
+% 'Ar','Al' and 'Cz'. Once measured, an Atlas reference baby head, with
+% these points marked, is mapped onto the graph display of points.
 %
 % Before the allignment of the head model, a coordinte transform is done:
 % 1: place the 'inion' at the origin
@@ -28,8 +28,21 @@ function varargout = DIGIGUI(varargin)
 %    plane, thus alligning the inion and nasion.
 % This coordinate transform is then applied to all measured points.
 %
+% At present this is the only atlas that has been tested - see the
+% 'default_atlas' directory for what is needed for a different atlas. I
+% expect that some work will need to be done to make different atlasses
+% importable when the program has been compiled: in particular changes to
+% the working directory to try and include new .m files.
+%
+% Once a list of points has been found, the atlas can be realigned at any
+% time. This is useful if one wishes to remeasure an atlas point.
+%
+% A list of points in absolute coordinates of the Polhemus can be specified
+% along with a given tolerance in a space delimited text file. Click
+% 'File/Import Expected Coordinates...' for more detail.
+%
 % A tab delimited list of points and their XYZ coords is outputted to
-% a file of the users choosing.
+% a file of the user's choosing.
 %
 %
 % MATLAB GUIDE Generated comments:
@@ -88,6 +101,9 @@ function DIGIGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for DIGIGUI
 handles.output = hObject;
+
+disp(['Working dir: ', pwd]);
+disp(['ctfroot: ', ctfroot]);
 
 %-------------------Get the executable/.m directory--------------------
 
@@ -208,24 +224,45 @@ handles.editedLocationsList = false;
 handles.editedAtlasPoints = false;
 
 handles.warning_distance = 0.1;
-handles.atlas_dir = 'default_atlas';
+if ~isdeployed
+    atlas_dir = fullfile(pwd, 'default_atlas');
+else
+    % Note that for some reason the default atlas directory is
+    % located directly in ctfroot
+    atlas_dir = fullfile(ctfroot, 'default_atlas');
+end
 
-%Get default settings
+%Get settings
 try
-    load(which('settings.mat'),'warning_distance');
-    test = warning_distance; % use here to trigger error if missing
-    load(which('settings.mat'),'atlas_dir');
-    test = atlas_dir;
-    load(which('settings.mat'),'save_expected_coords');
-    test = save_expected_coords;
+    if ~isdeployed
+        settings_loc = fullfile(pwd, 'settings.mat');
+    else
+        settings_loc = fullfile(ctfroot, 'DIGIGUI', 'settings.mat');
+    end
+    disp(['looking for settings.mat at ', settings_loc]);
+    load(settings_loc,'warning_distance','atlas_dir','save_expected_coords');
+    disp(['warning_distance: ', num2str(warning_distance)]);
+    disp(['atlas_dir: ', atlas_dir]);
+    disp(['save_expected_coords: ', num2str(save_expected_coords)]);
 catch
-    uiwait(errordlg('Settings missing or not found, falling back on default settings.','Setting Error'));
-    load(which('default_settings.mat'),'warning_distance');
-    test = warning_distance;
-    load(which('default_settings.mat'),'atlas_dir');
-    test = atlas_dir;
-    load(which('default_settings.mat'),'save_expected_coords');
-    test = save_expected_coords;
+    uiwait(errordlg('Settings missing or not found, falling back on default settings.','Settings Error'));
+    try
+        load('default_settings.mat','warning_distance','atlas_dir','save_expected_coords');
+        disp(['warning_distance: ', num2str(warning_distance)]);
+        if ~isdeployed
+            atlas_dir = fullfile(pwd, atlas_dir);
+        else
+            atlas_dir = fullfile(ctfroot, atlas_dir);
+        end
+        disp(['atlas_dir: ', atlas_dir]);
+        disp(['save_expected_coords: ', num2str(save_expected_coords)]);
+    catch
+        uiwait(errordlg('Default settings missing or not found! Quitting.','Settings Error'));
+        %Quit the gui
+        guidata(hObject, handles);
+        CloseFcn(hObject,eventdata,handles);
+        return
+    end
 end
 
 handles.warning_distance = warning_distance;
@@ -233,6 +270,7 @@ handles.save_expected_coords = save_expected_coords;
 
 %Import atlas
 noatlas = true;
+isdefault = false;
 while noatlas
     try
         %load other data needed for headpoint plotting - these are the required
@@ -246,8 +284,25 @@ while noatlas
             noatlas = false;
         end
     catch
-        disp('Bad atlas directory, using default');
-        load(which('default_settings.mat'), 'atlas_dir');
+        try
+            disp('Bad atlas directory, using default');
+            load(which('default_settings.mat'), 'atlas_dir');
+            if ~isdeployed
+                atlas_dir = fullfile(pwd, atlas_dir);
+            else
+                atlas_dir = fullfile(ctfroot, atlas_dir);
+            end
+            disp(['atlas_dir: ', atlas_dir]);
+            disp(['is default atlas dir? ' num2str(isdefault)]);
+            assert(~isdefault);
+            isdefault = true;
+        catch
+            uiwait(errordlg('Default atlas directory missing or not found! Quitting.','Settings Error'));
+            %Quit the gui
+            guidata(hObject, handles);
+            CloseFcn(hObject,eventdata,handles);
+            return
+        end
     end
 end
 
@@ -256,8 +311,14 @@ addpath(handles.atlas_dir);
 
 %--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
 
+if ~isdeployed
+    saved_location_names_loc = fullfile(pwd, 'savedLocationNames.mat');
+else
+    saved_location_names_loc = fullfile(ctfroot, 'DIGIGUI', 'savedLocationNames.mat');
+end
 try
-    load(which('savedLocationNames.mat'),'locations');
+    disp(['looking for savedLocationNames.mat at ', saved_location_names_loc])
+    load(saved_location_names_loc, 'locations');
 catch
     uiwait(warndlg('Could not find previously used location list.',...
         'Location Warning','modal'));
@@ -304,18 +365,21 @@ catch
     fclose(FileID);
 
     % Save locations variable to be loaded next time
-    if ~isdeployed
-        save('savedLocationNames.mat','locations');
-    else
-        save(fullfile(ctfroot,'savedLocationNames.mat'),'locations');
-    end
-
+    disp(['Saving locations to: ', saved_location_names_loc]);
+    save(saved_location_names_loc,'locations');
 end
 
 %--------------------LOAD EXPECTED COORDS---------------------------------
+if ~isdeployed
+    saved_expected_coords_loc = fullfile(pwd, 'saved_expected_coords.mat');
+else
+    saved_expected_coords_loc = fullfile(ctfroot, 'DIGIGUI', 'saved_expected_coords.mat');
+end
 if handles.save_expected_coords
     try
-        load(which('saved_expected_coords.mat'));
+        disp(['Looking for expected_coords at: ', saved_expected_coords_loc]);
+        disp(['Looking for expected_coords_tolerance at: ', saved_expected_coords_loc]);
+        load(saved_expected_coords_loc);
         handles.expected_coords = expected_coords;
         handles.expected_coords_tolerance = expected_coords_tolerance;
     catch
@@ -330,10 +394,12 @@ if handles.save_expected_coords
     end
 else
     % remove the saved file to avoid confusion
-    if exist('saved_expected_coords.mat', 'file')==2
-        delete('saved_expected_coords.mat');
+    if exist(saved_expected_coords_loc, 'file')==2
+        delete(saved_expected_coords_loc);
     end
 end
+
+% Get the checkmark icon for use when checking if coordinates match
 handles.checkmark_icon = imread('checkmark.tif');
 
 %error test the first serial port functions...
@@ -401,9 +467,11 @@ guidata(hObject, handles);
 % and a cell list of strings called `names'.
 function [landmarks, landmark_names, mesh] = load_atlas_data(atlas_dir)
 
+disp(['Loading atlas_landmarks.mat from: ', fullfile(atlas_dir, 'atlas_landmarks.mat')])
 landmarks = load(fullfile(atlas_dir, 'atlas_landmarks.mat'));
 landmark_names = landmarks.names;
 landmarks = landmarks.pts;
+disp(['Loading mesh.mat from: ', fullfile(atlas_dir, 'mesh.mat')]);
 mesh = load(fullfile(atlas_dir, 'mesh.mat'));
 mesh = mesh.mesh;
 
@@ -556,30 +624,27 @@ catch
     handles = struct([]);
 end
 
+if ~isdeployed
+    settings_loc = fullfile(pwd, 'settings.mat');
+else
+    settings_loc = fullfile(ctfroot, 'DIGIGUI', 'settings.mat');
+end
+
 % save settings
 if isfield(handles, 'atlas_dir')
+    disp(['Saving atlas_dir to ', settings_loc]);
     atlas_dir = handles.atlas_dir;
-    if ~isdeployed
-        save('settings.mat', 'atlas_dir');
-    else
-        save(fullfile(ctfroot,'settings.mat'), 'atlas_dir');
-    end
+    save(settings_loc, 'atlas_dir');
 end
 if isfield(handles, 'warning_distance')
+    disp(['Saving warning_distance to ', settings_loc]);
     warning_distance = handles.warning_distance;
-    if ~isdeployed
-        save('settings.mat', 'warning_distance', '-append');
-    else
-        save(fullfile(ctfroot,'settings.mat'), 'warning_distance', '-append');
-    end
+    save(settings_loc, 'warning_distance', '-append');
 end
 if isfield(handles, 'save_expected_coords')
+    disp(['Saving save_expected_coords to ', settings_loc]);
     save_expected_coords = handles.save_expected_coords;
-    if ~isdeployed
-        save('settings.mat', 'save_expected_coords', '-append');
-    else
-        save(fullfile(ctfroot,'settings.mat'), 'save_expected_coords', '-append');
-    end
+    save(settings_loc, 'save_expected_coords', '-append');
 end
 
 %close port only if not closed
@@ -1091,10 +1156,12 @@ fclose(FileID);
 
 % Save locations variable to be loaded next time
 if ~isdeployed
-    save('savedLocationNames.mat','locations');
+    saved_location_names_loc = fullfile(pwd, 'savedLocationNames.mat');
 else
-    save(fullfile(ctfroot,'savedLocationNames.mat'),'locations');
+    saved_location_names_loc = fullfile(ctfroot, 'DIGIGUI', 'savedLocationNames.mat');
 end
+disp(['Saving locations to: ', saved_location_names_loc]);
+save(saved_location_names_loc, 'locations');
 
 % Reset points counter
 handles.point_count = 0;
@@ -1374,10 +1441,12 @@ locations = landmark_names;
 
 % Save locations variable to be loaded next time
 if ~isdeployed
-    save('savedLocationNames.mat','locations');
+    saved_location_names_loc = fullfile(pwd,'savedLocationNames.mat');
 else
-    save(fullfile(ctfroot,'savedLocationNames.mat'),'locations');
+    saved_location_names_loc = fullfile(ctfroot, 'DIGIGUI', 'savedLocationNames.mat');
 end
+disp(['Saving locations to: ', saved_location_names_loc]);
+save(saved_location_names_loc,'locations');
 
 % Display initial point to find on GUI
 set(handles.infobox,'string',locations(1,1));
@@ -1536,10 +1605,13 @@ handles.expected_coords_tolerance = expected_coords_tolerance;
 
 % Save locations variable to be loaded next time
 if ~isdeployed
-    save('saved_expected_coords.mat','expected_coords','expected_coords_tolerance');
+    saved_expected_coords_loc = fullfile(pwd, 'saved_expected_coords.mat');
 else
-    save(fullfile(ctfroot,'saved_expected_coords.mat'),'expected_coords','expected_coords_tolerance');
+    saved_expected_coords_loc = fullfile(ctfroot, 'DIGIGUI', 'saved_expected_coords.mat');
 end
+disp(['Saving expected_coords to: ', saved_expected_coords_loc]);
+disp(['Saving expected_coords_tolerance to: ', saved_expected_coords_loc]);
+save(saved_expected_coords_loc,'expected_coords','expected_coords_tolerance');
 
 guidata(hObject,handles);
 
