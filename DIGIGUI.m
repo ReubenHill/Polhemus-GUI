@@ -56,7 +56,7 @@ function varargout = DIGIGUI(varargin)
 
 % Edit the above text to modify the response to help DIGIGUI
 
-% Last Modified by GUIDE v2.5 02-Jun-2023 13:24:12
+% Last Modified by GUIDE v2.5 02-Jun-2023 15:34:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -216,15 +216,20 @@ try
     test = warning_distance; % use here to trigger error if missing
     load(which('settings.mat'),'atlas_dir');
     test = atlas_dir;
+    load(which('settings.mat'),'save_expected_coords');
+    test = save_expected_coords;
 catch
     uiwait(errordlg('Settings missing or not found, falling back on default settings.','Setting Error'));
     load(which('default_settings.mat'),'warning_distance');
     test = warning_distance;
     load(which('default_settings.mat'),'atlas_dir');
     test = atlas_dir;
+    load(which('default_settings.mat'),'save_expected_coords');
+    test = save_expected_coords;
 end
 
 handles.warning_distance = warning_distance;
+handles.save_expected_coords = save_expected_coords;
 
 %Import atlas
 noatlas = true;
@@ -308,18 +313,25 @@ catch
 end
 
 %--------------------LOAD EXPECTED COORDS---------------------------------
-try
-    load(which('saved_expected_coords.mat'));
-    handles.expected_coords = expected_coords;
-    handles.expected_coords_tolerance = expected_coords_tolerance;
-catch
-    uiwait(warndlg('Could load the expected coordinates and tolerance from saved_expected_coords.mat.',...
-        'Expected Coordinates Warning','modal'));
-    if isfield(handles, 'expected_coords')
-        handles = rmfield(handles, 'expected_coords');
+if handles.save_expected_coords
+    try
+        load(which('saved_expected_coords.mat'));
+        handles.expected_coords = expected_coords;
+        handles.expected_coords_tolerance = expected_coords_tolerance;
+    catch
+        uiwait(warndlg('Could load the expected coordinates and tolerance from saved_expected_coords.mat.',...
+            'Expected Coordinates Warning','modal'));
+        if isfield(handles, 'expected_coords')
+            handles = rmfield(handles, 'expected_coords');
+        end
+        if isfield(handles, 'expected_coords_tolerance')
+            handles = rmfield(handles, 'expected_coords_tolerance');
+        end
     end
-    if isfield(handles, 'expected_coords_tolerance')
-        handles = rmfield(handles, 'expected_coords_tolerance');
+else
+    % remove the saved file to avoid confusion
+    if exist('saved_expected_coords.mat', 'file')==2
+        delete('saved_expected_coords.mat');
     end
 end
 handles.checkmark_icon = imread('checkmark.tif');
@@ -545,19 +557,12 @@ catch
 end
 
 % save settings
-if exist('settings.mat', 'file') ~= 2
-    if ~isdeployed
-        save('settings.mat'); % this creates a new file
-    else
-        save(fullfile(ctfroot,'settings.mat'));
-    end
-end
 if isfield(handles, 'atlas_dir')
     atlas_dir = handles.atlas_dir;
     if ~isdeployed
-        save('settings.mat', 'atlas_dir', '-append');
+        save('settings.mat', 'atlas_dir');
     else
-        save(fullfile(ctfroot,'settings.mat'), 'atlas_dir', '-append');
+        save(fullfile(ctfroot,'settings.mat'), 'atlas_dir');
     end
 end
 if isfield(handles, 'warning_distance')
@@ -566,6 +571,14 @@ if isfield(handles, 'warning_distance')
         save('settings.mat', 'warning_distance', '-append');
     else
         save(fullfile(ctfroot,'settings.mat'), 'warning_distance', '-append');
+    end
+end
+if isfield(handles, 'save_expected_coords')
+    save_expected_coords = handles.save_expected_coords;
+    if ~isdeployed
+        save('settings.mat', 'save_expected_coords', '-append');
+    else
+        save(fullfile(ctfroot,'settings.mat'), 'save_expected_coords', '-append');
     end
 end
 
@@ -1528,4 +1541,40 @@ else
     save(fullfile(ctfroot,'saved_expected_coords.mat'),'expected_coords','expected_coords_tolerance');
 end
 
+guidata(hObject,handles);
+
+
+% --------------------------------------------------------------------
+function menu_options_expected_coords_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_options_expected_coords (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% disable measurements
+handles.disable_measurements = true;
+guidata(hObject,handles);
+
+% Find interface objects that are set to 'on' i.e. enabled...
+InterfaceObj=findobj(handles.figure1,'Enable','on');
+% ... and turn them off.
+set(InterfaceObj,'Enable','off');
+
+%--------------------DIALOGUE BOX-----------------------
+choice = questdlg('Save expected coordinates between sessions?', ...
+	'Expected coordinates', ...
+	'Yes','No','No');
+switch choice
+    case 'Yes'
+        handles.save_expected_coords = true;
+    if ~isfield(handles, 'expected_coords')
+        uiwait(warndlg('No expected coordinates have been loaded yet. If the program is restarted without loading expected coordinates, a warning will be emitted unless "No" is selected.', 'Warning'))
+    end
+    case 'No'
+        handles.save_expected_coords = false;
+end
+
+% Re-enable the interface objects.
+set(InterfaceObj,'Enable','on');
+
+% re-enable measurements
+handles.disable_measurements = false;
 guidata(hObject,handles);
