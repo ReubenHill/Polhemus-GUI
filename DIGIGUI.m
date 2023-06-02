@@ -496,8 +496,11 @@ if(length(handles.landmark_measurements) == length(handles.AtlasLandmarks))
                                'Parent',handles.coord_plot);
 
     % set lighting of head
-    light;
-    lighting gouraud;
+    if ~isfield(handles, 'plotlight')
+        handles.plotlight = light;
+    end
+    set(handles.headplot, 'FaceLighting', 'gouraud');
+
     axis equal;
     hold off;
 
