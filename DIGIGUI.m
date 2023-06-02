@@ -56,7 +56,7 @@ function varargout = DIGIGUI(varargin)
 
 % Edit the above text to modify the response to help DIGIGUI
 
-% Last Modified by GUIDE v2.5 01-Jun-2023 14:11:05
+% Last Modified by GUIDE v2.5 02-Jun-2023 13:24:12
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -306,6 +306,23 @@ catch
     end
 
 end
+
+%--------------------LOAD EXPECTED COORDS---------------------------------
+try
+    load(which('saved_expected_coords.mat'));
+    handles.expected_coords = expected_coords;
+    handles.expected_coords_tolerance = expected_coords_tolerance;
+catch
+    uiwait(warndlg('Could load the expected coordinates and tolerance from saved_expected_coords.mat.',...
+        'Expected Coordinates Warning','modal'));
+    if isfield(handles, 'expected_coords')
+        handles = rmfield(handles, 'expected_coords');
+    end
+    if isfield(handles, 'expected_coords_tolerance')
+        handles = rmfield(handles, 'expected_coords_tolerance');
+    end
+end
+handles.checkmark_icon = imread('checkmark.tif');
 
 %error test the first serial port functions...
 try
@@ -602,6 +619,24 @@ if(handles.sensors == 2)
     Coords = Coords(1,:) - Coords(2,:);
 end
 
+% Extract previous data from table
+data = get(handles.coords_table,'Data');
+
+% Check against expected coordinates if any are specified
+if isfield(handles, 'expected_coords')
+    if handles.point_count <= size(handles.expected_coords, 1)
+        distance = norm(Coords - handles.expected_coords(handles.point_count, :));
+        this_point = data(handles.point_count, 1);
+        if distance > handles.expected_coords_tolerance
+            msg = sprintf('%s measurement is %0.2g cm from the expected location of (%0.2g, %0.2g, %0.2g) cm!\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, distance, handles.expected_coords(handles.point_count, 1), handles.expected_coords(handles.point_count, 2), handles.expected_coords(handles.point_count, 3), handles.expected_coords_tolerance);
+            errordlg(msg, 'Unexpected Measurement!');
+        else
+            msg = sprintf('%s measurement is within tolerance of (%0.2g, %0.2g, %0.2g) cm.\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, handles.expected_coords(handles.point_count, 1), handles.expected_coords(handles.point_count, 2), handles.expected_coords(handles.point_count, 3), handles.expected_coords_tolerance);
+            msgbox(msg, 'Expected Measurement Success!', 'custom', handles.checkmark_icon);
+        end
+    end
+end
+
 % Save original coordinates of landmark positions if measuring those
 if(handles.point_count <= length(handles.AtlasLandmarks))
     handles.landmark_measurements(handles.point_count, :) = Coords;
@@ -620,9 +655,6 @@ if isfield(handles, 'headplot')
     Coords = Coords + handles.TransformVector;
     Coords = Coords*handles.TransformMatrix';
 end
-
-% Extract previous data from table
-data = get(handles.coords_table,'Data');
 
 % Check if table is currently full - if it is then adding a new point
 % will expand the table...
@@ -1429,3 +1461,71 @@ function menu_file_saveas_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 save_Callback(hObject, eventdata, handles)
+
+
+% --------------------------------------------------------------------
+function menu_file_import_expected_coordinates_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_file_import_expected_coordinates (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% disable measurements
+handles.disable_measurements = true;
+guidata(hObject,handles);
+
+% Find interface objects that are set to 'on' i.e. enabled...
+InterfaceObj=findobj(handles.figure1,'Enable','on');
+% ... and turn them off.
+set(InterfaceObj,'Enable','off');
+
+%--------------------HEADPOINTS TO DIGITISE INPUT-----------------------
+if ~isdeployed
+    [filename,pathname] = ...
+        uigetfile({'*.txt;*.dat;*.csv', ...
+        'Text Files (*.txt) (*.dat) (*.csv)'} ...
+        ,['Select expected coordinates list file - each measurement point should be'...
+        ' on a new line. Tolerance should have its own line followed by two NaNs.']);
+else
+    [filename,pathname] = ...
+        uigetfile({'*.txt;*.dat;*.csv', ...
+        'Text Files (*.txt) (*.dat) (*.csv)'} ...
+        ,['Select expected coordinates list file - each measurement point should be'...
+        ' on a new line. Tolerance should have its own line followed by two NaNs.'],handles.userDir);
+end
+% Re-enable the interface objects.
+set(InterfaceObj,'Enable','on');
+
+% re-enable measurements
+handles.disable_measurements = false;
+guidata(hObject,handles);
+
+% user selected cancel...
+if isequal(filename,0)
+    return
+end
+
+disp(['User selected ', fullfile(pathname, filename)])
+
+expected_coords = load([pathname filename]);
+
+% Find tolerance - it should be folowed by two NaNs
+[row, col] = find(isnan(expected_coords), 1, 'first');
+if ~length(row) || ~length(col)
+    errordlg('No NaNs found in expected coordinates file! Tolerance was therefore not found!')
+    return
+end
+expected_coords_tolerance = expected_coords(row, col-1);
+% remove the nan row
+expected_coords(row, :) = [];
+% save
+handles.expected_coords = expected_coords;
+handles.expected_coords_tolerance = expected_coords_tolerance;
+
+% Save locations variable to be loaded next time
+if ~isdeployed
+    save('saved_expected_coords.mat','expected_coords','expected_coords_tolerance');
+else
+    save(fullfile(ctfroot,'saved_expected_coords.mat'),'expected_coords','expected_coords_tolerance');
+end
+
+guidata(hObject,handles);
