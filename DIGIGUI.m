@@ -238,7 +238,6 @@ while noatlas
             handles.AtlasLandmarks = landmarks;
             handles.AtlasLandmarkNames = landmark_names;
             handles.mesh = mesh;
-            handles.landmark_measurements = zeros(length(landmarks), 3);
             noatlas = false;
         end
     catch
@@ -409,48 +408,60 @@ function HeadAlign_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-if(handles.point_count >= length(handles.AtlasLandmarks))
+% handles.landmark_measurements is dynamically grown so we can always
+% do an alignment when it is fully populated
+if(length(handles.landmark_measurements) == length(handles.AtlasLandmarks))
 
     % extract the locations
     locations = get(handles.coords_table,'Data');
-
-    % Get original landmark measurements (in case already done a coord
-    % transform and redoing atlas measurements)
-    landmarks = handles.landmark_measurements;
+    measurements = cell2mat(locations(:, 2:4));
 
     %get transformation matrix to new coord system
-    [TransformMatrix,TransformVector] = CoordinateTransform(landmarks);
-    %save tranformation
-    handles.TransformMatrix = TransformMatrix;
-    handles.TransformVector = TransformVector;
+    [TransformMatrix,TransformVector] = CoordinateTransform(handles.landmark_measurements);
 
     % reset list of points to just show locations to find so transformed
     % points can be plotted
-    locations = get(handles.coords_table,'Data');
+
 
     hold on
 
-    for k = 1:size(landmarks,1)
+    for k = 1:length(measurements)
+        if isfield(handles, 'TransformMatrix')
+            % undo old transform
+            measurements(k,:) = measurements(k,:) * handles.TransformMatrix;
+            measurements(k,:) = measurements(k,:) - handles.TransformVector;
+        end
+
         %transform cardinal points
-        landmarks(k,:) = landmarks(k,:) + TransformVector;
-        landmarks(k,:) = landmarks(k,:)*TransformMatrix';
+        measurements(k,:) = measurements(k,:) + TransformVector;
+        measurements(k,:) = measurements(k,:)*TransformMatrix';
 
         %remove old point from graph
         delete(handles.pointhandle(k));
 
         %replot point
-        handles.pointhandle(k) = plot3(landmarks(k,1), ...
-                                       landmarks(k,2), ...
-                                       landmarks(k,3), ...
-                                       'm.', 'MarkerSize', 30, ...
-                                       'Parent' , handles.coord_plot);
+        if k <= length(handles.AtlasLandmarks)
+            % plot as landmark
+            handles.pointhandle(k) = plot3(measurements(k,1), ...
+                                           measurements(k,2), ...
+                                           measurements(k,3), ...
+                                           'm.', 'MarkerSize', 30, ...
+                                           'Parent' , handles.coord_plot);
+        else
+            % plot as measurement
+            handles.pointhandle(k) = plot3(measurements(k,1), ...
+                                           measurements(k,2), ...
+                                           measurements(k,3), ...
+                                           'b.', 'MarkerSize', 30, ...
+                                           'Parent' , handles.coord_plot);
+        end
 
         %replot axes...
         axis(handles.coord_plot,'equal');
 
-        %update newly transformed cardinal point coords (converting back
+        %update newly transformed point coords (converting back
         %to a cell array first)
-        locations(k,2:4) = num2cell(landmarks(k,1:3));
+        locations(k,2:4) = num2cell(measurements(k,1:3));
 
     end
 
@@ -460,9 +471,11 @@ if(handles.point_count >= length(handles.AtlasLandmarks))
     % Show newly transformed cardinal point coords on table
     set(handles.coords_table,'Data',locations);
 
+    transformed_landmarks = measurements(1:length(handles.AtlasLandmarks), :);
+
     %find matrix (A) and vector (B) needed to map head to cardinal points
     %with affine transformation
-    [A,B] = affinemap(handles.AtlasLandmarks,landmarks);
+    [A,B] = affinemap(handles.AtlasLandmarks, transformed_landmarks);
 
     mesh_trans = handles.mesh;
     mesh_trans.node = affine_trans_RJC(handles.mesh.node,A,B);
@@ -488,8 +501,9 @@ if(handles.point_count >= length(handles.AtlasLandmarks))
     axis equal;
     hold off;
 
-    % disable  headalign button
-    set(hObject,'Enable','off');
+    %save tranformation
+    handles.TransformMatrix = TransformMatrix;
+    handles.TransformVector = TransformVector;
 
     % Update handles structure
     guidata(hObject, handles);
@@ -561,116 +575,117 @@ if(handles.sensors == 2)
     data_str(2,:) = fgetl(s);
 end
 
-%don't run most of the callback if waiting to do alignment...
-if(handles.point_count == length(handles.AtlasLandmarks) && ...
-        strcmp(get(handles.HeadAlign,'Enable'),'on') && ...
-        handles.disable_measurements == false)
-    % Warn user that points aren't collected until alignment done
-    warndlg('Atlas points must be aligned before continuing.',...
-        'Measurement Issue...','modal');
-elseif(handles.disable_measurements == false)
-    %increment the point count before measurement
-    handles.point_count = handles.point_count + 1;
+%increment the point count before measurement
+handles.point_count = handles.point_count + 1;
 
-    data_num=str2num(data_str);
+data_num=str2num(data_str);
 
-    % Format of data obtained for the current settings
-    % 1 2 3 4 5 6 7
-    % 1 Detector Number (should be 1 for 1 stylus)
-    % 2 X position in cms
-    % 3 Y position in cms
-    % 4 Z position in cms
-    % 5 Azimuth of stylus in degrees
-    % 6 Elevation of stylus in degrees
-    % 7 Roll of stylus degrees
+% Format of data obtained for the current settings
+% 1 2 3 4 5 6 7
+% 1 Detector Number (should be 1 for 1 stylus)
+% 2 X position in cms
+% 3 Y position in cms
+% 4 Z position in cms
+% 5 Azimuth of stylus in degrees
+% 6 Elevation of stylus in degrees
+% 7 Roll of stylus degrees
 
-    % extract coords
-    Coords = data_num(:,2:4);
+% extract coords
+Coords = data_num(:,2:4);
 
-    % if there are 2 sensors do vector subtraction to get position of
-    % stylus sensor relative to second sensor
-    if(handles.sensors == 2)
-        Coords = Coords(1,:) - Coords(2,:);
-    end
+% if there are 2 sensors do vector subtraction to get position of
+% stylus sensor relative to second sensor
+if(handles.sensors == 2)
+    Coords = Coords(1,:) - Coords(2,:);
+end
 
-    % disable head alignment butten until we have all landmark positions
-    if(handles.point_count < length(handles.AtlasLandmarks))
-        set(handles.HeadAlign,'Enable','off');
-    % enable head align if have enough points...
-    elseif handles.point_count == length(handles.AtlasLandmarks)
-        set(handles.HeadAlign,'Enable','on');
-    end
-    % Save original coordinates of landmark positions if measuring those
-    if(handles.point_count <= length(handles.AtlasLandmarks))
-        handles.landmark_measurements(handles.point_count, :) = Coords;
-    end
-    % Do coord transform on points measured after alignment - i.e. if
-    % there is a head plotted.
-    if isfield(handles, 'headplot')
-        Coords = Coords + handles.TransformVector;
-        Coords = Coords*handles.TransformMatrix';
-    end
+% Save original coordinates of landmark positions if measuring those
+if(handles.point_count <= length(handles.AtlasLandmarks))
+    handles.landmark_measurements(handles.point_count, :) = Coords;
+end
+% disable head alignment butten until we have all landmark positions.
+% Note that landmark_measurements is a dynamically resized array so
+% the below check works!
+if(length(handles.landmark_measurements) < length(handles.AtlasLandmarks))
+    set(handles.HeadAlign,'Enable','off');
+else
+    set(handles.HeadAlign,'Enable','on');
+end
+% Do coord transform on points measured after alignment - i.e. if
+% there is a head plotted.
+if isfield(handles, 'headplot')
+    Coords = Coords + handles.TransformVector;
+    Coords = Coords*handles.TransformMatrix';
+end
 
-    % Extract previous data from table
-    data = get(handles.coords_table,'Data');
+% Extract previous data from table
+data = get(handles.coords_table,'Data');
 
-    % Check if table is currently full - if it is then adding a new point
-    % will expand the table...
-    if(handles.point_count > size(data,1))
-        % ... so update the bool that tracks if location names have been
-        % edited. When the user saves their data they will therefore be
-        % prompted to save the locations list too.
-        handles.editedLocationsList = true;
-    end
+% Check if table is currently full - if it is then adding a new point
+% will expand the table...
+if(handles.point_count > size(data,1))
+    % ... so update the bool that tracks if location names have been
+    % edited. When the user saves their data they will therefore be
+    % prompted to save the locations list too.
+    handles.editedLocationsList = true;
+end
 
-    % Update table with newly measured x y and z values
-    data(handles.point_count,2:4) = num2cell(Coords);
-    set(handles.coords_table,'Data',data);
+% Update table with newly measured x y and z values
+data(handles.point_count,2:4) = num2cell(Coords);
+set(handles.coords_table,'Data',data);
 
-    % update point to look for (unless at end of list as given by the
-    % length of data - ie the number of headpoints)
-    if( handles.point_count < size(data,1) )
-        set(handles.infobox,'string', data(handles.point_count+1,1));
-            % (Set to the next position on the table)
-    else
-        set(handles.infobox,'string','End of locations list reached');
-    end
+% update point to look for (unless at end of list as given by the
+% length of data - ie the number of headpoints)
+if( handles.point_count < size(data,1) )
+    set(handles.infobox,'string', data(handles.point_count+1,1));
+        % (Set to the next position on the table)
+else
+    set(handles.infobox,'string','End of locations list reached');
+end
 
-    if handles.point_count > 1
-        % extract the previous point for comparison
-        last_point = cell2mat(data(handles.point_count-1, 2:4));
-        % If our last point is empty then we can't do a comparison. This
-        % will happen when you select a different row to measure, in which
-        % case a double tap isn't going to happen
-        if length(last_point) == 3
-            distance = norm(Coords - last_point);
-            if distance < handles.warning_distance
-                last_point = data(handles.point_count-1, 1);
-                this_point = data(handles.point_count, 1);
-                msg = sprintf('%s measurement was only %0.2g cm from %s measurement!\nCurrent warning distance is %0.2g cm. This can be changed in the options.', this_point{1}, distance, last_point{1}, handles.warning_distance);
-                warndlg(msg, 'Double tap warning');
-            end
+if handles.point_count > 1
+    % extract the previous point for comparison
+    last_point = cell2mat(data(handles.point_count-1, 2:4));
+    % If our last point is empty then we can't do a comparison. This
+    % will happen when you select a different row to measure, in which
+    % case a double tap isn't going to happen
+    if length(last_point) == 3
+        distance = norm(Coords - last_point);
+        if distance < handles.warning_distance
+            last_point = data(handles.point_count-1, 1);
+            this_point = data(handles.point_count, 1);
+            msg = sprintf('%s measurement was only %0.2g cm from %s measurement!\nCurrent warning distance is %0.2g cm. This can be changed in the options.', this_point{1}, distance, last_point{1}, handles.warning_distance);
+            warndlg(msg, 'Double tap warning');
         end
     end
-
-    %add the measured point to the 3d graph
-    hold(handles.coord_plot,'on');
-    %save the handle of the point so it can be removed later...
-    if(handles.point_count <= length(handles.AtlasLandmarks))
-        handles.pointhandle(handles.point_count) = plot3(Coords(1), ...
-                                            Coords(2),Coords(3), ...
-                                            'm.', 'MarkerSize', 30, ...
-                                            'Parent' , handles.coord_plot);
-    else %Note: above marker points are plotted differently
-        handles.pointhandle(handles.point_count) = plot3(Coords(1), ...
-                                            Coords(2),Coords(3), ...
-                                           'b.', 'MarkerSize', 30, ...
-                                           'Parent',handles.coord_plot);
-    end
-    hold(handles.coord_plot,'off');
-    %replot axes...
-    axis(handles.coord_plot,'equal');
 end
+
+% Remove point from graph if present...
+if isfield(handles, 'pointhandle')
+    if handles.point_count <= length(handles.pointhandle)
+        delete(handles.pointhandle(handles.point_count));
+        % and replot axes.
+        axis(handles.coord_plot,'equal');
+    end
+end
+
+%add the measured point to the 3d graph
+hold(handles.coord_plot,'on');
+%save the handle of the point so it can be removed later...
+if(handles.point_count <= length(handles.AtlasLandmarks))
+    handles.pointhandle(handles.point_count) = plot3(Coords(1), ...
+                                        Coords(2),Coords(3), ...
+                                        'm.', 'MarkerSize', 30, ...
+                                        'Parent' , handles.coord_plot);
+else %Note: above marker points are plotted differently
+    handles.pointhandle(handles.point_count) = plot3(Coords(1), ...
+                                        Coords(2),Coords(3), ...
+                                       'b.', 'MarkerSize', 30, ...
+                                       'Parent',handles.coord_plot);
+end
+hold(handles.coord_plot,'off');
+%replot axes...
+axis(handles.coord_plot,'equal');
 
 % Update handles structure
 guidata(handles.figure1,handles);
@@ -1148,20 +1163,12 @@ function measureThisRowButton_Callback(hObject, eventdata, handles)
 % (doesn't if no selection performed before clicking or cell has been
 % deselected)
 if(isfield(handles,'selectedRow'))
-
     if(length(handles.selectedRow) > 1)
         % Multiple rows/row elements selected
         errordlg({'Multiple rows or row elements have been selected.';...
             'Please select only a single cell.'},...
             'Selection Error','modal');
-    elseif(handles.selectedRow <= length(handles.AtlasLandmarks))
-        % Atlas point selected
-        errordlg(['Atlas Points can only be measured in order'...
-            ' and cannot be changed after alignment.'],...
-            'Selection Error','modal');
-    elseif(handles.point_count >= length(handles.AtlasLandmarks) && ...
-            strcmp(get(handles.HeadAlign,'Enable'),'off'))
-            % (ie all atlas points collected and headalign clicked.)
+    else
         % Point selected successfully!
 
         % Set point_count such that the selected row will be measured
@@ -1171,16 +1178,9 @@ if(isfield(handles,'selectedRow'))
         data = get(handles.coords_table,'Data');
         set(handles.infobox,'string',...
                 data(handles.selectedRow,1))
-
-    else
-        errordlg(['Please finish gathering atlas points then press '...
-        '"Align Atlas Points" before selecting individual locations to ',...
-        'measure the position of.'],'Selection Error','modal');
     end
 else
     % No point selected
-
-    % Tell user to select a row to measure at
     errordlg('Please select a row to gather location data.',...
         'Selection Error','modal');
 end
