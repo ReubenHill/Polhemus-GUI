@@ -402,9 +402,9 @@ mesh = mesh.mesh;
 function [good] = good_atlas_data(landmarks, landmark_names, mesh)
 
 good = false;
-if length(landmarks) < 4
+if size(landmarks, 1) < 4
     errordlg('Too few landmark points in atlas data!', 'atlas_landmarks.mat');
-elseif length(landmark_names) ~= length(landmarks)
+elseif size(landmark_names, 1) ~= size(landmarks, 1)
     errordlg('Too few/many landmark names!', 'atlas_landmarks.mat');
 elseif ~all([mesh.nnode, 3] == size(mesh.node))
     errordlg('Node matrix should be nnode by 3 matrix!', 'mesh.mat');
@@ -427,7 +427,7 @@ function HeadAlign_Callback(hObject, eventdata, handles)
 
 % handles.landmark_measurements is dynamically grown so we can always
 % do an alignment when it is fully populated
-if(length(handles.landmark_measurements) == length(handles.AtlasLandmarks))
+if(size(handles.landmark_measurements, 1) == size(handles.AtlasLandmarks, 1))
 
     % extract the locations
     locations = get(handles.coords_table,'Data');
@@ -442,7 +442,7 @@ if(length(handles.landmark_measurements) == length(handles.AtlasLandmarks))
 
     hold on
 
-    for k = 1:length(measurements)
+    for k = 1:size(measurements, 1)
         if isfield(handles, 'TransformMatrix')
             % undo old transform
             measurements(k,:) = measurements(k,:) * handles.TransformMatrix;
@@ -457,7 +457,7 @@ if(length(handles.landmark_measurements) == length(handles.AtlasLandmarks))
         delete(handles.pointhandle(k));
 
         %replot point
-        if k <= length(handles.AtlasLandmarks)
+        if k <= size(handles.AtlasLandmarks, 1)
             % plot as landmark
             handles.pointhandle(k) = plot3(measurements(k,1), ...
                                            measurements(k,2), ...
@@ -488,7 +488,7 @@ if(length(handles.landmark_measurements) == length(handles.AtlasLandmarks))
     % Show newly transformed cardinal point coords on table
     set(handles.coords_table,'Data',locations);
 
-    transformed_landmarks = measurements(1:length(handles.AtlasLandmarks), :);
+    transformed_landmarks = measurements(1:size(handles.AtlasLandmarks, 1), :);
 
     %find matrix (A) and vector (B) needed to map head to cardinal points
     %with affine transformation
@@ -638,13 +638,13 @@ if isfield(handles, 'expected_coords')
 end
 
 % Save original coordinates of landmark positions if measuring those
-if(handles.point_count <= length(handles.AtlasLandmarks))
+if(handles.point_count <= size(handles.AtlasLandmarks, 1))
     handles.landmark_measurements(handles.point_count, :) = Coords;
 end
 % disable head alignment butten until we have all landmark positions.
 % Note that landmark_measurements is a dynamically resized array so
 % the below check works!
-if(length(handles.landmark_measurements) < length(handles.AtlasLandmarks))
+if(size(handles.landmark_measurements, 1) < size(handles.AtlasLandmarks, 1))
     set(handles.HeadAlign,'Enable','off');
 else
     set(handles.HeadAlign,'Enable','on');
@@ -697,7 +697,7 @@ end
 
 % Remove point from graph if present...
 if isfield(handles, 'pointhandle')
-    if handles.point_count <= length(handles.pointhandle)
+    if handles.point_count <= size(handles.pointhandle, 1)
         delete(handles.pointhandle(handles.point_count));
         % and replot axes.
         axis(handles.coord_plot,'equal');
@@ -707,7 +707,7 @@ end
 %add the measured point to the 3d graph
 hold(handles.coord_plot,'on');
 %save the handle of the point so it can be removed later...
-if(handles.point_count <= length(handles.AtlasLandmarks))
+if(handles.point_count <= size(handles.AtlasLandmarks, 1))
     handles.pointhandle(handles.point_count) = plot3(Coords(1), ...
                                         Coords(2),Coords(3), ...
                                         'm.', 'MarkerSize', 30, ...
@@ -759,7 +759,7 @@ if (handles.point_count ~= 0)
     set(handles.infobox,'string', data(handles.point_count+1,1));
 
     % Disable align if now not enough points
-    if(handles.point_count <= length(handles.AtlasLandmarks))
+    if(handles.point_count <= size(handles.AtlasLandmarks, 1))
         set(handles.HeadAlign,'Enable','off');
     end
 
@@ -922,7 +922,7 @@ data = get(handles.coords_table,'Data');
 % (doesn't if no selection performed before clicking or cell has been
 % deselected)
 if(isfield(handles,'selectedRow'))
-    if(handles.selectedRow(end) < length(handles.AtlasLandmarks))
+    if(handles.selectedRow(end) < size(handles.AtlasLandmarks, 1))
         errordlg('Cannot insert or delete Atlas Points','Error','modal');
     else
         % insert above topmost selected row...
@@ -968,7 +968,7 @@ data = get(handles.coords_table,'Data');
 % (doesn't if no selection performed before clicking or cell has been
 % deselected)
 if(isfield(handles,'selectedRow'))
-    if(handles.selectedRow(1) <= length(handles.AtlasLandmarks))
+    if(handles.selectedRow(1) <= size(handles.AtlasLandmarks, 1))
         errordlg('Cannot insert or delete Atlas Points','Edit Error','modal');
     else
         % delete selected rows...
@@ -1162,7 +1162,7 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in save dialogue
     data = get(handles.coords_table,'Data');
 
     % error if outputting only atlas points
-    if(size(data,1) <= length(handles.AtlasLandmarks))
+    if(size(data,1) <= size(handles.AtlasLandmarks, 1))
         errordlg({'Cannot export locations:';...
             'Only atlas point locations have been found.';...
             'Atlas points alone cannot be exported.'},...
@@ -1174,7 +1174,7 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in save dialogue
         fileID = fopen([pathName fileName],'wt');
 
         %write from after the atlas points to the last data point
-        for i = length(handles.AtlasLandmarks)+1:size(data,1)
+        for i = size(handles.AtlasLandmarks, 1)+1:size(data,1)
             fprintf(fileID,'%s\n',data{i,1});
         end
 
@@ -1242,7 +1242,7 @@ NewData = eventdata.NewData;
 PreviousData = eventdata.PreviousData;
 
 % warn when editing of rows less than number of atlas points
-if(selectedRow <= length(handles.AtlasLandmarks))
+if(selectedRow <= size(handles.AtlasLandmarks, 1))
 
     % Check that user is happy to continue
     button = 'Yes';
