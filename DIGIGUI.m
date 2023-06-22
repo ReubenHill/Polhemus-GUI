@@ -69,7 +69,7 @@ function varargout = DIGIGUI(varargin)
 
 % Edit the above text to modify the response to help DIGIGUI
 
-% Last Modified by GUIDE v2.5 02-Jun-2023 15:34:42
+% Last Modified by GUIDE v2.5 22-Jun-2023 14:55:08
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -214,6 +214,7 @@ end
 % Set the initial point count to 0. This is incremented before each
 % measured head point until the last head point is measured.
 handles.point_count = 0;
+handles.point_count_history = [];
 
 % this is true when opening save dialogues for example
 handles.disable_measurements = false;
@@ -673,9 +674,6 @@ if(handles.sensors == 2)
     data_str(2,:) = fgetl(s);
 end
 
-%increment the point count before measurement
-handles.point_count = handles.point_count + 1;
-
 data_num=str2num(data_str);
 
 % Format of data obtained for the current settings
@@ -700,6 +698,24 @@ end
 % Extract previous data from table
 data = get(handles.coords_table,'Data');
 
+%increment the point count to the next unmeasured point before measurement
+at_unmeasured_point = false;
+point_count_increment = 0;
+while ~at_unmeasured_point
+    try
+        handles.point_count = handles.point_count + 1;
+        point_count_increment = point_count_increment + 1;
+        next_x_coord = data(handles.point_count, 2);
+        if isempty(next_x_coord{1})
+            at_unmeasured_point = true;
+        end
+    catch
+        % will get 'Index exceeds matrix dimensions' error for very first
+        % measurement since we have no cells in column 2 yet
+        at_unmeasured_point = true;
+    end
+end
+
 % Check against expected coordinates if any are specified
 if isfield(handles, 'expected_coords')
     if handles.point_count <= size(handles.expected_coords, 1)
@@ -722,7 +738,7 @@ end
 % disable head alignment butten until we have all landmark positions.
 % Note that landmark_measurements is a dynamically resized array so
 % the below check works!
-if(size(handles.landmark_measurements, 1) < size(handles.AtlasLandmarks, 1))
+if ~isfield(handles, 'landmark_measurements') || size(handles.landmark_measurements, 1) < size(handles.AtlasLandmarks, 1)
     set(handles.HeadAlign,'Enable','off');
 else
     set(handles.HeadAlign,'Enable','on');
@@ -747,31 +763,52 @@ end
 data(handles.point_count,2:4) = num2cell(Coords);
 set(handles.coords_table,'Data',data);
 
-% update point to look for (unless at end of list as given by the
-% length of data - ie the number of headpoints)
-if( handles.point_count < size(data,1) )
-    set(handles.infobox,'string', data(handles.point_count+1,1));
-        % (Set to the next position on the table)
-else
-    set(handles.infobox,'string','End of locations list reached');
-end
-
+% Double tap warning...
 if handles.point_count > 1
-    % extract the previous point for comparison
-    last_point = cell2mat(data(handles.point_count-1, 2:4));
+    % extract the previous measured point for comparison
+    last_point = cell2mat(data(handles.point_count-point_count_increment, 2:4));
     % If our last point is empty then we can't do a comparison. This
     % will happen when you select a different row to measure, in which
     % case a double tap isn't going to happen
     if length(last_point) == 3
         distance = norm(Coords - last_point);
         if distance < handles.warning_distance
-            last_point = data(handles.point_count-1, 1);
+            last_point = data(handles.point_count-point_count_increment, 1);
             this_point = data(handles.point_count, 1);
             msg = sprintf('%s measurement was only %0.2g cm from %s measurement!\nCurrent warning distance is %0.2g cm. This can be changed in the options.', this_point{1}, distance, last_point{1}, handles.warning_distance);
             warndlg(msg, 'Double tap warning');
         end
     end
 end
+
+% update point to look for (unless at end of list as given by the
+% length of data - ie the number of headpoints)
+if( handles.point_count < size(data,1) )
+    % search for next unmeasured point
+    point_count_increment = 0;
+    at_unmeasured_point = false;
+    while ~at_unmeasured_point
+        try
+            point_count_increment = point_count_increment + 1;
+            next_x_coord = data(handles.point_count+point_count_increment, 2);
+            if isempty(next_x_coord{1})
+                at_unmeasured_point = true;
+            end
+        catch
+            % will get 'Index exceeds matrix dimensions' error for very first
+            % measurement since we have no cells in column 2 yet
+            at_unmeasured_point = true;
+        end
+    end
+    if handles.point_count+point_count_increment <= size(data,1)
+        set(handles.infobox,'string', data(handles.point_count+point_count_increment,1));
+    else
+        set(handles.infobox,'string','End of locations list reached');
+    end
+else
+    set(handles.infobox,'string','End of locations list reached');
+end
+
 
 % Remove point from graph if present...
 if isfield(handles, 'pointhandle')
@@ -800,6 +837,9 @@ hold(handles.coord_plot,'off');
 %replot axes...
 axis(handles.coord_plot,'equal');
 
+% save the point_count so it can be undone
+handles.point_count_history(end+1) = handles.point_count;
+
 % Update handles structure
 guidata(handles.figure1,handles);
 
@@ -811,25 +851,28 @@ function remove_last_pt_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %don't delete points if alignment already done or at first point
-if (handles.point_count ~= 0)
+if ~isempty(handles.point_count_history)
 
     data = get(handles.coords_table,'Data');
 
+    last_point_count = handles.point_count_history(end);
+    handles.point_count_history(end) = [];
+
     % Set the last measured values of x, y and z to be empty cells
-    data{handles.point_count,2} = []; % x
-    data{handles.point_count,3} = []; % y
-    data{handles.point_count,4} = []; % z
+    data{last_point_count,2} = []; % x
+    data{last_point_count,3} = []; % y
+    data{last_point_count,4} = []; % z
 
     set(handles.coords_table,'Data',data);
 
     % Remove point from graph...
-    delete(handles.pointhandle(handles.point_count));
+    delete(handles.pointhandle(last_point_count));
     % and replot axes.
     axis(handles.coord_plot,'equal');
 
-    % Decrement point_count so next measurement is of the point which
+    % Reset point_count so next measurement is of the point which
     % has just been deleted
-    handles.point_count = handles.point_count - 1;
+    handles.point_count = last_point_count-1;
 
     data = get(handles.coords_table,'Data');
 
@@ -1294,6 +1337,19 @@ if(isfield(handles,'selectedRow'))
         data = get(handles.coords_table,'Data');
         set(handles.infobox,'string',...
                 data(handles.selectedRow,1))
+
+        % delete the point data (if there is any)
+        if size(data, 2) > 1
+            row_x_coord = data(handles.selectedRow, 2);
+            if ~isempty(row_x_coord{1})
+                data(handles.selectedRow, 2:end) = {[], [], []};
+                set(handles.coords_table,'Data',data);
+                % Remove point from graph...
+                delete(handles.pointhandle(handles.selectedRow));
+                % and replot axes.
+                axis(handles.coord_plot,'equal');
+            end
+        end
     end
 else
     % No point selected
@@ -1650,4 +1706,41 @@ set(InterfaceObj,'Enable','on');
 
 % re-enable measurements
 handles.disable_measurements = false;
+guidata(hObject,handles);
+
+
+% --------------------------------------------------------------------
+function menu_edit_delete_rows_data_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_edit_delete_rows_data (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+data = get(handles.coords_table,'Data');
+
+% See if the selectedRow variable exists within the handles struct
+% (doesn't if no selection performed before clicking or cell has been
+% deselected)
+if(isfield(handles,'selectedRow'))
+
+    % only bother if there's data to delete!
+    if size(data, 2) > 1
+        for i = 1:length(handles.selectedRow)
+            row_x_coord = data(handles.selectedRow(i), 2);
+            if ~isempty(row_x_coord{1})
+                % Remove point from graph...
+                delete(handles.pointhandle(handles.selectedRow(i)));
+                % and replot axes.
+                axis(handles.coord_plot,'equal');
+            end
+        end
+        % delete data
+        data(handles.selectedRow,2:end) = cell(length(handles.selectedRow), 3);
+    end
+
+else
+    % Tell user to select a row before inserting
+    errordlg('Please select a row to delete.','Delete Error','modal');
+end
+% save the newly changed data to the table on the gui
+set(handles.coords_table,'Data',data);
+
 guidata(hObject,handles);
