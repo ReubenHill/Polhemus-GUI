@@ -1322,38 +1322,34 @@ function measureThisRowButton_Callback(hObject, eventdata, handles)
 % (doesn't if no selection performed before clicking or cell has been
 % deselected)
 if(isfield(handles,'selectedRow'))
-    if(length(handles.selectedRow) > 1)
-        % Multiple rows/row elements selected
-        errordlg({'Multiple rows or row elements have been selected.';...
-            'Please select only a single cell.'},...
-            'Selection Error','modal');
-    else
-        % Point selected successfully!
 
-        % Set point_count such that the selected row will be measured
-        handles.point_count = handles.selectedRow-1;
+    % Set point_count such that the first of the selected rows will be
+    % measured
+    handles.point_count = handles.selectedRow(1)-1;
 
-        % Update the "Point to Get" string
-        data = get(handles.coords_table,'Data');
-        set(handles.infobox,'string',...
-                data(handles.selectedRow,1))
+    % Update the "Point to Get" string
+    data = get(handles.coords_table,'Data');
+    set(handles.infobox,'string',...
+            data(handles.selectedRow(1),1))
 
-        % delete the point data (if there is any)
-        if size(data, 2) > 1
-            row_x_coord = data(handles.selectedRow, 2);
+    % delete the point data if there's data to delete
+    if size(data, 2) > 1
+        % Remove plotted points from graph and replot axes
+        for i = 1:length(handles.selectedRow)
+            row_x_coord = data(handles.selectedRow(i), 2);
             if ~isempty(row_x_coord{1})
-                data(handles.selectedRow, 2:end) = {[], [], []};
-                set(handles.coords_table,'Data',data);
-                % Remove point from graph...
-                delete(handles.pointhandle(handles.selectedRow));
-                % and replot axes.
+                delete(handles.pointhandle(handles.selectedRow(i)));
                 axis(handles.coord_plot,'equal');
             end
         end
+        % delete data on table
+        data(handles.selectedRow,2:4) = cell(length(handles.selectedRow), 3);
+        set(handles.coords_table,'Data',data);
     end
+
 else
     % No point selected
-    errordlg('Please select a row to gather location data.',...
+    errordlg('Please select rows to delete and gather location data.',...
         'Selection Error','modal');
 end
 guidata(hObject,handles);
@@ -1706,41 +1702,4 @@ set(InterfaceObj,'Enable','on');
 
 % re-enable measurements
 handles.disable_measurements = false;
-guidata(hObject,handles);
-
-
-% --------------------------------------------------------------------
-function menu_edit_delete_rows_data_Callback(hObject, eventdata, handles)
-% hObject    handle to menu_edit_delete_rows_data (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-data = get(handles.coords_table,'Data');
-
-% See if the selectedRow variable exists within the handles struct
-% (doesn't if no selection performed before clicking or cell has been
-% deselected)
-if(isfield(handles,'selectedRow'))
-
-    % only bother if there's data to delete!
-    if size(data, 2) > 1
-        for i = 1:length(handles.selectedRow)
-            row_x_coord = data(handles.selectedRow(i), 2);
-            if ~isempty(row_x_coord{1})
-                % Remove point from graph...
-                delete(handles.pointhandle(handles.selectedRow(i)));
-                % and replot axes.
-                axis(handles.coord_plot,'equal');
-            end
-        end
-        % delete data
-        data(handles.selectedRow,2:end) = cell(length(handles.selectedRow), 3);
-    end
-
-else
-    % Tell user to select a row before inserting
-    errordlg('Please select a row to delete.','Delete Error','modal');
-end
-% save the newly changed data to the table on the gui
-set(handles.coords_table,'Data',data);
-
 guidata(hObject,handles);
