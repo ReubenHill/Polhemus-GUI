@@ -1059,6 +1059,11 @@ if(isfield(handles,'selectedRow'))
         % been made
         if(any(handles.selectedRow <= handles.point_count))
 
+            % Remove point from graph...
+            delete(handles.pointhandle(handles.point_count));
+            % and replot axes.
+            axis(handles.coord_plot,'equal');
+
             % find out how many of the selected rows are less than the
             % current point_count
             numToDecrement = nnz(handles.selectedRow <= handles.point_count);
@@ -1066,10 +1071,6 @@ if(isfield(handles,'selectedRow'))
             % decrement point count to account for number of fewer points
             handles.point_count = handles.point_count - numToDecrement;
 
-            % Remove point from graph...
-            delete(handles.pointhandle(handles.point_count));
-            % and replot axes.
-            axis(handles.coord_plot,'equal');
         end
     end
 else
