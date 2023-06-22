@@ -775,7 +775,7 @@ end
 
 % Remove point from graph if present...
 if isfield(handles, 'pointhandle')
-    if handles.point_count <= size(handles.pointhandle, 1)
+    if handles.point_count <= size(handles.pointhandle, 2)
         delete(handles.pointhandle(handles.point_count));
         % and replot axes.
         axis(handles.coord_plot,'equal');
