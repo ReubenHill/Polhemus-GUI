@@ -682,10 +682,6 @@ end
 if isfield(handles, 'unexpectedMeasurementErrorFigure') && isvalid(handles.unexpectedMeasurementErrorFigure)
     return
 end
-% Remove any open expected measurement figures
-if isfield(handles, 'expectedMeasurementFigure') && isvalid(handles.expectedMeasurementFigure)
-    close(handles.expectedMeasurementFigure)
-end
 
 data_num=str2num(data_str);
 
@@ -726,21 +722,6 @@ while ~at_unmeasured_point
         % will get 'Index exceeds matrix dimensions' error for very first
         % measurement since we have no cells in column 2 yet
         at_unmeasured_point = true;
-    end
-end
-
-% Check against expected coordinates if any are specified
-if isfield(handles, 'expected_coords')
-    if handles.point_count <= size(handles.expected_coords, 1)
-        distance = norm(Coords - handles.expected_coords(handles.point_count, :));
-        this_point = data(handles.point_count, 1);
-        if distance > handles.expected_coords_tolerance
-            msg = sprintf('%s measurement is %0.2g cm from the expected location of (%0.2g, %0.2g, %0.2g) cm!\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, distance, handles.expected_coords(handles.point_count, 1), handles.expected_coords(handles.point_count, 2), handles.expected_coords(handles.point_count, 3), handles.expected_coords_tolerance);
-            handles.unexpectedMeasurementErrorFigure = errordlg(msg, 'Unexpected Measurement!', 'modal');
-        else
-            msg = sprintf('%s measurement is within tolerance of (%0.2g, %0.2g, %0.2g) cm.\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, handles.expected_coords(handles.point_count, 1), handles.expected_coords(handles.point_count, 2), handles.expected_coords(handles.point_count, 3), handles.expected_coords_tolerance);
-            handles.expectedMeasurementFigure = msgbox(msg, 'Expected Measurement Success!', 'custom', handles.checkmark_icon);
-        end
     end
 end
 
@@ -790,6 +771,28 @@ if handles.point_count > 1
             this_point = data(handles.point_count, 1);
             msg = sprintf('%s measurement was only %0.2g cm from %s measurement!\nCurrent warning distance is %0.2g cm. This can be changed in the options.', this_point{1}, distance, last_point{1}, handles.warning_distance);
             handles.doubleTapWarnFigure = warndlg(msg, 'Double tap warning', 'modal');
+            % need this UI wait to avoid any 'Expected Measurement Success!'
+            % dialogue boxes being lost.
+            uiwait(handles.doubleTapWarnFigure);
+        end
+    end
+end
+
+% Remove any open expected measurement figures
+if isfield(handles, 'expectedMeasurementFigure') && isvalid(handles.expectedMeasurementFigure)
+    close(handles.expectedMeasurementFigure)
+end
+% Check against expected coordinates if any are specified
+if isfield(handles, 'expected_coords')
+    if handles.point_count <= size(handles.expected_coords, 1)
+        distance = norm(Coords - handles.expected_coords(handles.point_count, :));
+        this_point = data(handles.point_count, 1);
+        if distance > handles.expected_coords_tolerance
+            msg = sprintf('%s measurement is %0.2g cm from the expected location of (%0.2g, %0.2g, %0.2g) cm!\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, distance, handles.expected_coords(handles.point_count, 1), handles.expected_coords(handles.point_count, 2), handles.expected_coords(handles.point_count, 3), handles.expected_coords_tolerance);
+            handles.unexpectedMeasurementErrorFigure = errordlg(msg, 'Unexpected Measurement!', 'modal');
+        else
+            msg = sprintf('%s measurement is within tolerance of (%0.2g, %0.2g, %0.2g) cm.\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, handles.expected_coords(handles.point_count, 1), handles.expected_coords(handles.point_count, 2), handles.expected_coords(handles.point_count, 3), handles.expected_coords_tolerance);
+            handles.expectedMeasurementFigure = msgbox(msg, 'Expected Measurement Success!', 'custom', handles.checkmark_icon);
         end
     end
 end
