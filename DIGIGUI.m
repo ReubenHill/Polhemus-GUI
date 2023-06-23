@@ -674,6 +674,11 @@ if(handles.sensors == 2)
     data_str(2,:) = fgetl(s);
 end
 
+% Check that we haven't got a double tap warning open
+if isfield(handles, 'doubleTapWarnFigure') && isvalid(handles.doubleTapWarnFigure)
+    return
+end
+
 data_num=str2num(data_str);
 
 % Format of data obtained for the current settings
@@ -776,7 +781,7 @@ if handles.point_count > 1
             last_point = data(handles.point_count-point_count_increment, 1);
             this_point = data(handles.point_count, 1);
             msg = sprintf('%s measurement was only %0.2g cm from %s measurement!\nCurrent warning distance is %0.2g cm. This can be changed in the options.', this_point{1}, distance, last_point{1}, handles.warning_distance);
-            warndlg(msg, 'Double tap warning');
+            handles.doubleTapWarnFigure = warndlg(msg, 'Double tap warning', 'modal');
         end
     end
 end
