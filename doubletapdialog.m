@@ -13,9 +13,9 @@ function choice = doubletapdialog(currentval)
     txt = uicontrol('Parent',d,...
            'Style','text',...
            'Position',[31 100 210 30],...
-           'String', sprintf('Use slider to set warning distance.\nCurrent value: %0.2g cm.', currentval));
+           'String', sprintf('Use slider to set error distance.\nCurrent value: %0.2g cm.', currentval));
 
-    fun = @(~,e)set(txt,'String',sprintf('Use slider to set warning distance.\nCurrent value: %0.2g cm.', get(e.AffectedObject,'Value')));
+    fun = @(~,e)set(txt,'String',sprintf('Use slider to set error distance.\nCurrent value: %0.2g cm.', get(e.AffectedObject,'Value')));
 
     addlistener(slider, 'Value', 'PostSet', fun);
 

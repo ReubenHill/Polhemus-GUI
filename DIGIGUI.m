@@ -224,7 +224,7 @@ handles.editedLocationsList = false;
 % this is true if the atlas point names has been edited.
 handles.editedAtlasPoints = false;
 
-handles.warning_distance = 0.1;
+handles.error_distance = 0.1;
 if ~isdeployed
     atlas_dir = fullfile(pwd, 'default_atlas');
 else
@@ -241,15 +241,15 @@ try
         settings_loc = fullfile(ctfroot, 'DIGIGUI', 'settings.mat');
     end
     disp(['looking for settings.mat at ', settings_loc]);
-    load(settings_loc,'warning_distance','atlas_dir','save_expected_coords');
-    disp(['warning_distance: ', num2str(warning_distance)]);
+    load(settings_loc,'error_distance','atlas_dir','save_expected_coords');
+    disp(['error_distance: ', num2str(error_distance)]);
     disp(['atlas_dir: ', atlas_dir]);
     disp(['save_expected_coords: ', num2str(save_expected_coords)]);
 catch
     uiwait(errordlg('Settings missing or not found, falling back on default settings.','Settings Error'));
     try
-        load('default_settings.mat','warning_distance','atlas_dir','save_expected_coords');
-        disp(['warning_distance: ', num2str(warning_distance)]);
+        load('default_settings.mat','error_distance','atlas_dir','save_expected_coords');
+        disp(['error_distance: ', num2str(error_distance)]);
         if ~isdeployed
             atlas_dir = fullfile(pwd, atlas_dir);
         else
@@ -266,7 +266,7 @@ catch
     end
 end
 
-handles.warning_distance = warning_distance;
+handles.error_distance = error_distance;
 handles.save_expected_coords = save_expected_coords;
 
 %Import atlas
@@ -637,10 +637,10 @@ if isfield(handles, 'atlas_dir')
     atlas_dir = handles.atlas_dir;
     save(settings_loc, 'atlas_dir');
 end
-if isfield(handles, 'warning_distance')
-    disp(['Saving warning_distance to ', settings_loc]);
-    warning_distance = handles.warning_distance;
-    save(settings_loc, 'warning_distance', '-append');
+if isfield(handles, 'error_distance')
+    disp(['Saving error_distance to ', settings_loc]);
+    error_distance = handles.error_distance;
+    save(settings_loc, 'error_distance', '-append');
 end
 if isfield(handles, 'save_expected_coords')
     disp(['Saving save_expected_coords to ', settings_loc]);
@@ -766,11 +766,11 @@ if handles.point_count > 1
     % case a double tap isn't going to happen
     if length(last_point) == 3
         distance = norm(Coords - last_point);
-        if distance < handles.warning_distance
+        if distance < handles.error_distance
             last_point = data(handles.point_count-point_count_increment, 1);
             this_point = data(handles.point_count, 1);
-            msg = sprintf('%s measurement was only %0.2g cm from %s measurement!\nCurrent warning distance is %0.2g cm. This can be changed in the options.', this_point{1}, distance, last_point{1}, handles.warning_distance);
-            handles.doubleTapWarnFigure = warndlg(msg, 'Double tap warning', 'modal');
+            msg = sprintf('%s measurement was only %0.2g cm from %s measurement!\nCurrent error distance is %0.2g cm. This can be changed in the options.', this_point{1}, distance, last_point{1}, handles.error_distance);
+            handles.doubleTapErrorFigure = errordlg(msg, 'Double tap error', 'modal');
             % reset point count, remove data, update guidata and exit
             data(handles.point_count,2:4) = {[], [], []};
             set(handles.coords_table,'Data',data);
@@ -1553,7 +1553,7 @@ InterfaceObj=findobj(handles.figure1,'Enable','on');
 set(InterfaceObj,'Enable','off');
 
 %--------------------DIALOGUE BOX-----------------------
-handles.warning_distance = doubletapdialog(handles.warning_distance);
+handles.error_distance = doubletapdialog(handles.error_distance);
 
 % Re-enable the interface objects.
 set(InterfaceObj,'Enable','on');
