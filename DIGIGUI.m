@@ -69,7 +69,7 @@ function varargout = DIGIGUI(varargin)
 
 % Edit the above text to modify the response to help DIGIGUI
 
-% Last Modified by GUIDE v2.5 23-Jun-2023 10:06:17
+% Last Modified by GUIDE v2.5 23-Jun-2023 15:42:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1780,3 +1780,34 @@ end
 % save the newly changed data to the table on the gui
 set(handles.coords_table,'Data',data);
 guidata(hObject,handles);
+
+
+% --------------------------------------------------------------------
+function menu_edit_insert_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_edit_insert (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function menu_edit_delete_rows_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_edit_delete_rows (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+DeleteRowPushbutton_Callback(hObject, eventdata, handles)
+
+
+% --------------------------------------------------------------------
+function menu_edit_insert_rows_below_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_edit_insert_rows_below (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+pushbutton_insert_rows_below_Callback(hObject, eventdata, handles)
+
+
+% --------------------------------------------------------------------
+function menu_edit_insert_1_row_below_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_edit_insert_1_row_below (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+InsertRowPushbutton_Callback(hObject, eventdata, handles)
