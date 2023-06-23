@@ -69,7 +69,7 @@ function varargout = DIGIGUI(varargin)
 
 % Edit the above text to modify the response to help DIGIGUI
 
-% Last Modified by GUIDE v2.5 23-Jun-2023 09:35:47
+% Last Modified by GUIDE v2.5 23-Jun-2023 10:06:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1024,7 +1024,7 @@ if(isempty(eventdata.Indices))
     % by deselection (eg by the removal or addition of a set of coordinates)
     handles = rmfield(handles,'selectedRow');
 else
-    % extract the row from where the user clicked on the table.
+    % extract the row(s) from where the user clicked on the table.
     handles.selectedRow = eventdata.Indices(:,1);
 end
 guidata(hObject,handles);
@@ -1036,46 +1036,9 @@ function InsertRowPushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to InsertRowPushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+insert_rows_below(hObject, eventdata, handles, 1)
 
-data = get(handles.coords_table,'Data');
 
-% See if the selectedRow variable exists within the handles struct
-% (doesn't if no selection performed before clicking or cell has been
-% deselected)
-if(isfield(handles,'selectedRow'))
-    if(handles.selectedRow(end) < size(handles.AtlasLandmarks, 1))
-        errordlg('Cannot insert or delete Atlas Points','Error','modal');
-    else
-        % insert above topmost selected row...
-        row = handles.selectedRow(end);
-        dataBelowSelectedRow = data(row+1:end,:);
-        % add new row by adding a single rowed cell array
-        data(row+1,:) = cell(1,size(data,2));
-        % add back the data that was saved before by concatenating below where
-        % the new row has been added.
-        data = [data(1:row+1,:) ; dataBelowSelectedRow];
-
-        % check if have added row within where measurement has already been
-        % made
-        if(handles.selectedRow(end) < handles.point_count)
-            % increment point count to account for 1 extra point
-            handles.point_count = handles.point_count + 1;
-        end
-
-        % Locations list has now been edited so change bool.
-        handles.editedLocationsList = true;
-
-    end
-else
-%    % insert empty row at the end
-%    data{end+1,1} = [];
-
-    % Tell user to select a row before inserting
-    errordlg('Please select a row to insert below.','Insert Error','modal');
-end
-% save the newly changed data to the table on the gui
-set(handles.coords_table,'Data',data);
-guidata(hObject,handles);
 
 % --- Executes on button press in DeleteRowPushbutton.
 function DeleteRowPushbutton_Callback(hObject, eventdata, handles)
@@ -1711,3 +1674,71 @@ function pushbutton_import_expected_coordinates_Callback(hObject, eventdata, han
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 menu_file_import_expected_coordinates_Callback(hObject, eventdata, handles)
+
+
+% --- Executes on button press in pushbutton_insert_rows_below.
+function pushbutton_insert_rows_below_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_insert_rows_below (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+prompt = {'Number of rows:'};
+dlg_title = 'Insert Rows Below...';
+num_lines = 1;
+if isfield(handles,'previousInsertRowsVal')
+    defaultans = {num2str(handles.previousInsertRowsVal)};
+else
+    defaultans = {'1'};
+end
+answer = inputdlg(prompt,dlg_title,num_lines,defaultans);
+if isempty(answer)
+    % cancel selected
+    return
+end
+try
+    nrows = str2num(answer{1});
+    assert(nrows > 0);
+    assert(floor(nrows) == nrows);
+    handles.previousInsertRowsVal = nrows;
+catch
+    errordlg('Number of rows to insert must be a positive integer.', 'Error', 'modal');
+    return
+end
+insert_rows_below(hObject, eventdata, handles, nrows);
+
+
+function insert_rows_below(hObject, eventdata, handles, nrows)
+
+data = get(handles.coords_table,'Data');
+
+% See if the selectedRow variable exists within the handles struct
+% (doesn't if no selection performed before clicking or cell has been
+% deselected)
+if(isfield(handles,'selectedRow'))
+    if(handles.selectedRow(end) < size(handles.AtlasLandmarks, 1))
+        errordlg('Cannot insert or delete Atlas Points','Error','modal');
+    else
+        row = handles.selectedRow(end);
+        % insert new rows
+        data = [data(1:row,:); cell(nrows,size(data,2)); data(row+1:end,:)];
+
+        % check if have added rows within where measurement has already been
+        % made
+        if(handles.selectedRow(end) < handles.point_count)
+            % increment point count to account for extra points
+            handles.point_count = handles.point_count + nrows;
+        end
+
+        % Locations list has now been edited so change bool.
+        handles.editedLocationsList = true;
+
+    end
+else
+%    % insert empty row at the end
+%    data{end+1,1} = [];
+
+    % Tell user to select a row before inserting
+    errordlg('Please select a row to insert below.','Insert Error','modal');
+end
+% save the newly changed data to the table on the gui
+set(handles.coords_table,'Data',data);
+guidata(hObject,handles);
