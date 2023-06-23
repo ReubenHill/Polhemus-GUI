@@ -674,6 +674,9 @@ if(handles.sensors == 2)
     data_str(2,:) = fgetl(s);
 end
 
+if isfield(handles, 'disable_measurements') && handles.disable_measurements
+    return
+end
 % Don't measure if we have a double tap warning open or unexpected
 % measurement error open
 if isfield(handles, 'doubleTapWarnFigure') && isvalid(handles.doubleTapWarnFigure)
