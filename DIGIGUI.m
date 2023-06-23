@@ -69,7 +69,7 @@ function varargout = DIGIGUI(varargin)
 
 % Edit the above text to modify the response to help DIGIGUI
 
-% Last Modified by GUIDE v2.5 23-Jun-2023 15:42:56
+% Last Modified by GUIDE v2.5 23-Jun-2023 15:49:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -270,7 +270,7 @@ catch
 end
 
 handles.error_distance = error_distance;
-handles.double_tap_error_enabled = double_tap_error_enabled
+handles.double_tap_error_enabled = double_tap_error_enabled;
 handles.save_expected_coords = save_expected_coords;
 
 %Import atlas
@@ -615,19 +615,7 @@ if(size(handles.landmark_measurements, 1) == size(handles.AtlasLandmarks, 1))
 
 end
 
-
-
-
-
-function CloseFcn(source,event,handles)
-%my user-defined close request function
-%closes the serial port
-
-try
-    handles = guidata(handles.figure1);
-catch
-    handles = struct([]);
-end
+function save_settings(handles)
 
 if ~isdeployed
     settings_loc = fullfile(pwd, 'settings.mat');
@@ -657,6 +645,9 @@ if isfield(handles, 'save_expected_coords')
     save(settings_loc, 'save_expected_coords', '-append');
 end
 
+
+function handles = close_serial_port(handles)
+
 %close port only if not closed
 if(isfield(handles,'COMport'))
     if(handles.COMport ~= 0)
@@ -666,6 +657,21 @@ if(isfield(handles,'COMport'))
         delete(handles.serial);
     end
 end
+
+return
+
+
+function CloseFcn(source,event,handles)
+%my user-defined close request function
+
+try
+    handles = guidata(handles.figure1);
+catch
+    handles = struct([]);
+end
+
+save_settings(handles);
+close_serial_port(handles);
 
 delete(gcf);
 
@@ -1811,3 +1817,25 @@ function menu_edit_insert_1_row_below_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 InsertRowPushbutton_Callback(hObject, eventdata, handles)
+
+
+% --------------------------------------------------------------------
+function menu_file_reset_all_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_file_reset_all (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+choice = questdlg('Are you sure you want to reset? Any unsaved locations and measurements will be lost! Settings will be retained.', ...
+	'Are you sure?', ...
+	'Yes','No','No');
+switch choice
+    case 'Yes'
+        % clear previous measurements and headmap from plot...
+        cla(handles.coord_plot);
+        % and replot axes.
+        axis(handles.coord_plot,'equal');
+        save_settings(handles);
+        handles = close_serial_port(handles);
+        DIGIGUI_OutputFcn(hObject, eventdata, handles);
+    case 'No'
+        return;
+end
