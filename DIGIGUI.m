@@ -708,12 +708,11 @@ end
 data = get(handles.coords_table,'Data');
 
 %increment the point count to the next unmeasured point before measurement
+previous_point_count = handles.point_count;
 at_unmeasured_point = false;
-point_count_increment = 0;
 while ~at_unmeasured_point
     try
         handles.point_count = handles.point_count + 1;
-        point_count_increment = point_count_increment + 1;
         next_x_coord = data(handles.point_count, 2);
         if isempty(next_x_coord{1})
             at_unmeasured_point = true;
@@ -724,6 +723,7 @@ while ~at_unmeasured_point
         at_unmeasured_point = true;
     end
 end
+point_count_increment = handles.point_count - previous_point_count;
 
 % Save original coordinates of landmark positions if measuring those
 if(handles.point_count <= size(handles.AtlasLandmarks, 1))
@@ -771,9 +771,12 @@ if handles.point_count > 1
             this_point = data(handles.point_count, 1);
             msg = sprintf('%s measurement was only %0.2g cm from %s measurement!\nCurrent warning distance is %0.2g cm. This can be changed in the options.', this_point{1}, distance, last_point{1}, handles.warning_distance);
             handles.doubleTapWarnFigure = warndlg(msg, 'Double tap warning', 'modal');
-            % need this UI wait to avoid any 'Expected Measurement Success!'
-            % dialogue boxes being lost.
-            uiwait(handles.doubleTapWarnFigure);
+            % reset point count, remove data, update guidata and exit
+            data(handles.point_count,2:4) = {[], [], []};
+            set(handles.coords_table,'Data',data);
+            handles.point_count = previous_point_count;
+            guidata(handles.figure1,handles);
+            return
         end
     end
 end
@@ -790,6 +793,12 @@ if isfield(handles, 'expected_coords')
         if distance > handles.expected_coords_tolerance
             msg = sprintf('%s measurement is %0.2g cm from the expected location of (%0.2g, %0.2g, %0.2g) cm!\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, distance, handles.expected_coords(handles.point_count, 1), handles.expected_coords(handles.point_count, 2), handles.expected_coords(handles.point_count, 3), handles.expected_coords_tolerance);
             handles.unexpectedMeasurementErrorFigure = errordlg(msg, 'Unexpected Measurement!', 'modal');
+            % reset point count, remove data, update guidata and exit
+            data(handles.point_count,2:4) = {[], [], []};
+            set(handles.coords_table,'Data',data);
+            handles.point_count = previous_point_count;
+            guidata(handles.figure1,handles);
+            return
         else
             msg = sprintf('%s measurement is within tolerance of (%0.2g, %0.2g, %0.2g) cm.\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, handles.expected_coords(handles.point_count, 1), handles.expected_coords(handles.point_count, 2), handles.expected_coords(handles.point_count, 3), handles.expected_coords_tolerance);
             handles.expectedMeasurementFigure = msgbox(msg, 'Expected Measurement Success!', 'custom', handles.checkmark_icon);
