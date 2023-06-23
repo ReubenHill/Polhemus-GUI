@@ -69,7 +69,7 @@ function varargout = DIGIGUI(varargin)
 
 % Edit the above text to modify the response to help DIGIGUI
 
-% Last Modified by GUIDE v2.5 22-Jun-2023 14:55:08
+% Last Modified by GUIDE v2.5 23-Jun-2023 09:35:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1703,3 +1703,11 @@ set(InterfaceObj,'Enable','on');
 % re-enable measurements
 handles.disable_measurements = false;
 guidata(hObject,handles);
+
+
+% --- Executes on button press in pushbutton_import_expected_coordinates.
+function pushbutton_import_expected_coordinates_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_import_expected_coordinates (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+menu_file_import_expected_coordinates_Callback(hObject, eventdata, handles)
