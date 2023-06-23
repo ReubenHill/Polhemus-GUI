@@ -242,15 +242,16 @@ try
         settings_loc = fullfile(ctfroot, 'DIGIGUI', 'settings.mat');
     end
     disp(['looking for settings.mat at ', settings_loc]);
-    load(settings_loc,'error_distance','double_tap_error_enabled','atlas_dir','save_expected_coords');
+    load(settings_loc,'error_distance','double_tap_error_enabled','atlas_dir','save_expected_coords', 'only_measure_with_expected_coords');
     disp(['error_distance: ', num2str(error_distance)]);
     disp(['double_tap_error_enabled: ', num2str(double_tap_error_enabled)]);
     disp(['atlas_dir: ', atlas_dir]);
     disp(['save_expected_coords: ', num2str(save_expected_coords)]);
+    disp(['only_measure_with_expected_coords: ', num2str(only_measure_with_expected_coords)]);
 catch
     uiwait(errordlg('Settings missing or not found, falling back on default settings.','Settings Error'));
     try
-        load('default_settings.mat','error_distance','double_tap_error_enabled','atlas_dir','save_expected_coords');
+        load('default_settings.mat','error_distance','double_tap_error_enabled','atlas_dir','save_expected_coords','only_measure_with_expected_coords');
         disp(['error_distance: ', num2str(error_distance)]);
         disp(['double_tap_error_enabled: ', num2str(double_tap_error_enabled)]);
         if ~isdeployed
@@ -260,6 +261,7 @@ catch
         end
         disp(['atlas_dir: ', atlas_dir]);
         disp(['save_expected_coords: ', num2str(save_expected_coords)]);
+        disp(['only_measure_with_expected_coords: ', num2str(only_measure_with_expected_coords)]);
     catch
         uiwait(errordlg('Default settings missing or not found! Quitting.','Settings Error'));
         %Quit the gui
@@ -272,6 +274,7 @@ end
 handles.error_distance = error_distance;
 handles.double_tap_error_enabled = double_tap_error_enabled;
 handles.save_expected_coords = save_expected_coords;
+handles.only_measure_with_expected_coords = only_measure_with_expected_coords;
 
 %Import atlas
 noatlas = true;
@@ -644,6 +647,11 @@ if isfield(handles, 'save_expected_coords')
     save_expected_coords = handles.save_expected_coords;
     save(settings_loc, 'save_expected_coords', '-append');
 end
+if isfield(handles, 'only_measure_with_expected_coords')
+    disp(['Saving only_measure_with_expected_coords to ', settings_loc]);
+    only_measure_with_expected_coords = handles.only_measure_with_expected_coords;
+    save(settings_loc, 'only_measure_with_expected_coords', '-append');
+end
 
 
 function handles = close_serial_port(handles)
@@ -700,6 +708,16 @@ end
 if isfield(handles, 'unexpectedMeasurementErrorFigure') && isvalid(handles.unexpectedMeasurementErrorFigure)
     return
 end
+if (...
+        isfield(handles, 'only_measure_with_expected_coords') && ...
+        handles.only_measure_with_expected_coords && ...
+        ~isfield(handles, 'expected_coords') ...
+)
+    msg = 'Measurements cannot be made until a list of expected coordinates has been imported! This error can be disabled in the settings.';
+    errordlg(msg, 'Missing Expected Coordinates', 'modal');
+    return
+end
+
 
 data_num=str2num(data_str);
 
@@ -1691,8 +1709,8 @@ InterfaceObj=findobj(handles.figure1,'Enable','on');
 set(InterfaceObj,'Enable','off');
 
 %--------------------DIALOGUE BOX-----------------------
-choice = questdlg('Save expected coordinates between sessions?', ...
-	'Expected coordinates', ...
+choice = questdlg('OPTION 1/2: Save expected coordinates between sessions?', ...
+	'Expected coordinates option 1/2', ...
 	'Yes','No','No');
 switch choice
     case 'Yes'
@@ -1702,6 +1720,15 @@ switch choice
     end
     case 'No'
         handles.save_expected_coords = false;
+end
+choice = questdlg('OPTION 2/2: Disallow measurements until expected coordinates loaded?', ...
+	'Expected coordinates option 2/2', ...
+	'Yes','No','No');
+switch choice
+    case 'Yes'
+        handles.only_measure_with_expected_coords = true;
+    case 'No'
+        handles.only_measure_with_expected_coords = false;
 end
 
 % Re-enable the interface objects.
