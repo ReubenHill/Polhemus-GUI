@@ -674,9 +674,17 @@ if(handles.sensors == 2)
     data_str(2,:) = fgetl(s);
 end
 
-% Check that we haven't got a double tap warning open
+% Don't measure if we have a double tap warning open or unexpected
+% measurement error open
 if isfield(handles, 'doubleTapWarnFigure') && isvalid(handles.doubleTapWarnFigure)
     return
+end
+if isfield(handles, 'unexpectedMeasurementErrorFigure') && isvalid(handles.unexpectedMeasurementErrorFigure)
+    return
+end
+% Remove any open expected measurement figures
+if isfield(handles, 'expectedMeasurementFigure') && isvalid(handles.expectedMeasurementFigure)
+    close(handles.expectedMeasurementFigure)
 end
 
 data_num=str2num(data_str);
@@ -728,10 +736,10 @@ if isfield(handles, 'expected_coords')
         this_point = data(handles.point_count, 1);
         if distance > handles.expected_coords_tolerance
             msg = sprintf('%s measurement is %0.2g cm from the expected location of (%0.2g, %0.2g, %0.2g) cm!\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, distance, handles.expected_coords(handles.point_count, 1), handles.expected_coords(handles.point_count, 2), handles.expected_coords(handles.point_count, 3), handles.expected_coords_tolerance);
-            errordlg(msg, 'Unexpected Measurement!');
+            handles.unexpectedMeasurementErrorFigure = errordlg(msg, 'Unexpected Measurement!', 'modal');
         else
             msg = sprintf('%s measurement is within tolerance of (%0.2g, %0.2g, %0.2g) cm.\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, handles.expected_coords(handles.point_count, 1), handles.expected_coords(handles.point_count, 2), handles.expected_coords(handles.point_count, 3), handles.expected_coords_tolerance);
-            msgbox(msg, 'Expected Measurement Success!', 'custom', handles.checkmark_icon);
+            handles.expectedMeasurementFigure = msgbox(msg, 'Expected Measurement Success!', 'custom', handles.checkmark_icon);
         end
     end
 end
