@@ -20,7 +20,7 @@ function varargout = DIGIGUI(varargin)
 % 'Ar','Al' and 'Cz'. Once measured, an Atlas reference baby head, with
 % these points marked, is mapped onto the graph display of points.
 %
-% Before the allignment of the head model, a coordinte transform is done:
+% Before the allignment of the head model, a coordinate transform is done:
 % 1: place the 'inion' at the origin
 % 2: rotate the 'Al' into the y axis
 % 3: rotate the 'Ar' into the xy plane about the new 'Inion'-'Al' y axis
@@ -38,11 +38,17 @@ function varargout = DIGIGUI(varargin)
 % time. This is useful if one wishes to remeasure an atlas point.
 %
 % A list of points in absolute coordinates of the Polhemus can be specified
-% along with a given tolerance in a space delimited text file. Click
-% 'File/Import Expected Coordinates...' for more detail.
+% to measure as 'expected coordinates'. These are specified in a CSV file
+% as a list of locations and x-y-z coordinates in centimetres - see
+% 'expected_coordinates_example.txt' for the format required. The tolerance
+% for accepting a measurement is specified by providing a location called
+% "Tolerance" with the X coordinate used as the tolerance. The list of
+% points must correspond to at least some of the imported locations,
+% otherwise the expected coordinates will not be imported and an error will
+% be displayed.
 %
-% A tab delimited list of points and their XYZ coords is outputted to
-% a file of the user's choosing.
+% A CSV file, mat file, or excel spreadsheet of points and their XYZ coords is
+% outputted to a location of the user's choosing.
 %
 %
 % MATLAB GUIDE Generated comments:
@@ -69,7 +75,7 @@ function varargout = DIGIGUI(varargin)
 
 % Edit the above text to modify the response to help DIGIGUI
 
-% Last Modified by GUIDE v2.5 26-Jun-2023 12:38:38
+% Last Modified by GUIDE v2.5 26-Jun-2023 13:46:04
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1030,6 +1036,8 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
     if(filterIndex == 2)
         disp(['Data saving to ' pathName fileName]);
         dataOutput = get(handles.coords_table,'Data');
+        % remove any expected coordinates information
+        dataOutput = dataOutput(:, 1:4);
         save([pathName fileName],'dataOutput');
         disp('Data is stored in cell array "dataOutput"');
 
@@ -1055,8 +1063,11 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
             %Mark empty location names as '-'
             data(emptyLocationNames,1) = {'-'};
 
-            tableToOutput = cell2table(data,'VariableNames', ...
-                                       get(handles.coords_table,'ColumnName'));
+            % remove any expected coordinates information
+            data = data(:, 1:4);
+            columnnames = handles.coords_table.ColumnName(1:4);
+
+            tableToOutput = cell2table(data,'VariableNames', columnnames);
             % Note that writetable changes its output depending on the fileName
             % type.
             writetable(tableToOutput,[pathName fileName]);
@@ -1816,7 +1827,9 @@ handles.coords_table.ColumnName(5:8) = {'X exp.', 'Y exp.', 'Z exp.', 'Measured'
 
 function handles = remove_expected_coords(handles)
 % handles    structure with handles and user data (see GUIDATA)
-handles.coords_table.Data = handles.coords_table.Data(:, 1:4);
+if size(handles.coords_table.Data, 2) > 1
+    handles.coords_table.Data = handles.coords_table.Data(:, 1:4);
+end
 handles.coords_table.ColumnName = handles.coords_table.ColumnName(1:4);
 
 

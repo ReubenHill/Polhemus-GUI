@@ -13,6 +13,6 @@ For more information see the comments in `DIGIGUI.m`.
 
 This has been designed for use with MATLAB compiler using the `DIGIGUI.prj` file.
 
-Copyright (C) 2022 Reuben W. Nixon-Hill (formerly Reuben W. Hill)
+Copyright (C) 2023 Reuben W. Nixon-Hill (formerly Reuben W. Hill)
 
 This package is licenced under the MIT Licence (see LICENCE.txt).
