@@ -810,8 +810,9 @@ if handles.double_tap_error_enabled && handles.point_count > 1
             this_point = data(handles.point_count, 1);
             msg = sprintf('%s measurement was only %0.2g cm from %s measurement!\nCurrent error distance is %0.2g cm. This can be changed or disabled in the options.', this_point{1}, distance, last_point{1}, handles.error_distance);
             handles.doubleTapErrorFigure = errordlg(msg, 'Double tap error', 'modal');
-            % reset point count, remove data, update guidata and exit
+            % reset point count, remove data, untick measured, update guidata and exit
             data(handles.point_count,2:4) = {[], [], []};
+            data(handles.point_count, 8) = {false};
             set(handles.coords_table,'Data',data);
             handles.point_count = previous_point_count;
             guidata(handles.figure1,handles);
@@ -833,8 +834,9 @@ if isfield(handles, 'expected_coords')
         if distance > handles.expected_coords_tolerance
             msg = sprintf('%s measurement is %0.2g cm from the expected location of (%0.2g, %0.2g, %0.2g) cm!\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, distance, handles.expected_coords(rowmatch, 1).Variables, handles.expected_coords(rowmatch, 2).Variables, handles.expected_coords(rowmatch, 3).Variables, handles.expected_coords_tolerance);
             handles.unexpectedMeasurementErrorFigure = errordlg(msg, 'Unexpected Measurement!', 'modal');
-            % reset point count, remove data, update guidata and exit
+            % reset point count, remove data, untick measured, update guidata and exit
             data(handles.point_count,2:4) = {[], [], []};
+            data(handles.point_count, 8) = {false};
             set(handles.coords_table,'Data',data);
             handles.point_count = previous_point_count;
             guidata(handles.figure1,handles);
@@ -842,6 +844,9 @@ if isfield(handles, 'expected_coords')
         else
             msg = sprintf('%s measurement is within tolerance of (%0.2g, %0.2g, %0.2g) cm.\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, handles.expected_coords(rowmatch, 1).Variables, handles.expected_coords(rowmatch, 2).Variables, handles.expected_coords(rowmatch, 3).Variables, handles.expected_coords_tolerance);
             handles.expectedMeasurementFigure = msgbox(msg, 'Expected Measurement Success!', 'custom', handles.checkmark_icon);
+            % tick box...
+            data(handles.point_count, 8) = {true};
+            set(handles.coords_table,'Data',data);
         end
     end
 end
@@ -1414,6 +1419,10 @@ if(isfield(handles,'selectedRow'))
         end
         % delete data on table
         data(handles.selectedRow,2:4) = cell(length(handles.selectedRow), 3);
+        if size(data, 2) > 4
+            % untick any boxes if we have expected measurements too
+            data(handles.selectedRow,8) = num2cell(false(length(handles.selectedRow), 1));
+        end
         set(handles.coords_table,'Data',data);
     end
 
@@ -1795,9 +1804,13 @@ end
 data(:, 5:7) = cell(size(data,1), 3);
 data(match_rows, 5:7) = table2cell(expected_coords);
 
+% Add unticked tick boxes too
+data(:, 8) = cell(size(data,1), 1);
+data(match_rows, 8) = num2cell(false(size(expected_coords, 1), 1));
+
 % display new data with new headings
 set(handles.coords_table,'Data', data);
-handles.coords_table.ColumnName(5:7) = {'X exp.', 'Y exp.', 'Z exp.'};
+handles.coords_table.ColumnName(5:8) = {'X exp.', 'Y exp.', 'Z exp.', 'Measured'};
 
 
 
