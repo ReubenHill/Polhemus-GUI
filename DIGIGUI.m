@@ -1274,6 +1274,29 @@ InterfaceObj=findobj(handles.figure1,'Enable','on');
 % ... and turn them off.
 set(InterfaceObj,'Enable','off');
 
+% Check that user is happy to continue
+button = questdlg('Warning! This only exports location names. To save location coordinates use "Save As...". Do you wish to continue?' ...
+    ,'Export Warning','Yes','No','No');
+if strcmp(button, 'No')
+    % Re-enable the interface objects.
+    set(InterfaceObj,'Enable','on');
+    % re-enable measurements
+    handles.disable_measurements = false;
+    guidata(hObject,handles);
+    return
+end
+
+% Set name to previous name prior to editing if user selects "no"
+if(strcmp(button,'No'))
+    data = get(handles.coords_table,'Data');
+    data{selectedRow,1} = PreviousData;
+    set(handles.coords_table,'Data',data);
+    NewData = PreviousData;
+else
+    % Atlas points have been edited so update bool.
+    handles.editedAtlasPoints = true;
+end
+
 % Display warning dialogue before uiputfile if the atlas points have been
 % editied...
 if(handles.editedAtlasPoints)
