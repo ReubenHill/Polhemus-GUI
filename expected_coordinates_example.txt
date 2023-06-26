@@ -1,3 +1,4 @@
-15.0 0 0
-0 0 0
-10 NaN NaN
+Location,X,Y,Z
+Nasion,15.0,0,0
+Ar,0,0,0
+Tolerance,10,NaN,NaN

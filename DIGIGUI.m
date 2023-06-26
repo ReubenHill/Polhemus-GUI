@@ -377,39 +377,6 @@ catch
     save(saved_location_names_loc,'locations');
 end
 
-%--------------------LOAD EXPECTED COORDS---------------------------------
-if ~isdeployed
-    saved_expected_coords_loc = fullfile(pwd, 'saved_expected_coords.mat');
-else
-    saved_expected_coords_loc = fullfile(ctfroot, 'DIGIGUI', 'saved_expected_coords.mat');
-end
-if handles.save_expected_coords
-    try
-        disp(['Looking for expected_coords at: ', saved_expected_coords_loc]);
-        disp(['Looking for expected_coords_tolerance at: ', saved_expected_coords_loc]);
-        load(saved_expected_coords_loc);
-        handles.expected_coords = expected_coords;
-        handles.expected_coords_tolerance = expected_coords_tolerance;
-    catch
-        uiwait(warndlg('Could load the expected coordinates and tolerance from saved_expected_coords.mat.',...
-            'Expected Coordinates Warning','modal'));
-        if isfield(handles, 'expected_coords')
-            handles = rmfield(handles, 'expected_coords');
-        end
-        if isfield(handles, 'expected_coords_tolerance')
-            handles = rmfield(handles, 'expected_coords_tolerance');
-        end
-    end
-else
-    % remove the saved file to avoid confusion
-    if exist(saved_expected_coords_loc, 'file')==2
-        delete(saved_expected_coords_loc);
-    end
-end
-
-% Get the checkmark icon for use when checking if coordinates match
-handles.checkmark_icon = imread('checkmark.tif');
-
 %error test the first serial port functions...
 try
     %------------------------SERIAL CALLBACK SETUP---------------------
@@ -461,6 +428,42 @@ end
 xlabel(handles.coord_plot,'X');
 ylabel(handles.coord_plot,'Y');
 zlabel(handles.coord_plot,'Z');
+
+
+%--------------------LOAD EXPECTED COORDS---------------------------------
+if ~isdeployed
+    saved_expected_coords_loc = fullfile(pwd, 'saved_expected_coords.mat');
+else
+    saved_expected_coords_loc = fullfile(ctfroot, 'DIGIGUI', 'saved_expected_coords.mat');
+end
+if handles.save_expected_coords
+    try
+        disp(['Looking for expected_coords at: ', saved_expected_coords_loc]);
+        disp(['Looking for expected_coords_tolerance at: ', saved_expected_coords_loc]);
+        load(saved_expected_coords_loc);
+        handles = load_expected_coords(handles, expected_coords);
+        handles.expected_coords = expected_coords;
+        handles.expected_coords_tolerance = expected_coords_tolerance;
+    catch
+        uiwait(warndlg('Could load the expected coordinates and tolerance from saved_expected_coords.mat.',...
+            'Expected Coordinates Warning','modal'));
+        if isfield(handles, 'expected_coords')
+            handles = rmfield(handles, 'expected_coords');
+        end
+        if isfield(handles, 'expected_coords_tolerance')
+            handles = rmfield(handles, 'expected_coords_tolerance');
+        end
+        handles = remove_expected_coords(handles);
+    end
+else
+    % remove the saved file to avoid confusion
+    if exist(saved_expected_coords_loc, 'file')==2
+        delete(saved_expected_coords_loc);
+    end
+end
+
+% Get the checkmark icon for use when checking if coordinates match
+handles.checkmark_icon = imread('checkmark.tif');
 
 % Update handles structure
 guidata(hObject, handles);
@@ -823,11 +826,12 @@ if isfield(handles, 'expectedMeasurementFigure') && isvalid(handles.expectedMeas
 end
 % Check against expected coordinates if any are specified
 if isfield(handles, 'expected_coords')
-    if handles.point_count <= size(handles.expected_coords, 1)
-        distance = norm(Coords - handles.expected_coords(handles.point_count, :));
+    rowmatch = find(strcmp(data{handles.point_count, 1}, handles.expected_coords.Properties.RowNames));
+    if ~isempty(rowmatch)
+        distance = norm(Coords - handles.expected_coords(rowmatch, :).Variables);
         this_point = data(handles.point_count, 1);
         if distance > handles.expected_coords_tolerance
-            msg = sprintf('%s measurement is %0.2g cm from the expected location of (%0.2g, %0.2g, %0.2g) cm!\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, distance, handles.expected_coords(handles.point_count, 1), handles.expected_coords(handles.point_count, 2), handles.expected_coords(handles.point_count, 3), handles.expected_coords_tolerance);
+            msg = sprintf('%s measurement is %0.2g cm from the expected location of (%0.2g, %0.2g, %0.2g) cm!\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, distance, handles.expected_coords(rowmatch, 1).Variables, handles.expected_coords(rowmatch, 2).Variables, handles.expected_coords(rowmatch, 3).Variables, handles.expected_coords_tolerance);
             handles.unexpectedMeasurementErrorFigure = errordlg(msg, 'Unexpected Measurement!', 'modal');
             % reset point count, remove data, update guidata and exit
             data(handles.point_count,2:4) = {[], [], []};
@@ -836,7 +840,7 @@ if isfield(handles, 'expected_coords')
             guidata(handles.figure1,handles);
             return
         else
-            msg = sprintf('%s measurement is within tolerance of (%0.2g, %0.2g, %0.2g) cm.\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, handles.expected_coords(handles.point_count, 1), handles.expected_coords(handles.point_count, 2), handles.expected_coords(handles.point_count, 3), handles.expected_coords_tolerance);
+            msg = sprintf('%s measurement is within tolerance of (%0.2g, %0.2g, %0.2g) cm.\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, handles.expected_coords(rowmatch, 1).Variables, handles.expected_coords(rowmatch, 2).Variables, handles.expected_coords(rowmatch, 3).Variables, handles.expected_coords_tolerance);
             handles.expectedMeasurementFigure = msgbox(msg, 'Expected Measurement Success!', 'custom', handles.checkmark_icon);
         end
     end
@@ -1206,6 +1210,25 @@ if(handles.point_count > 0)
     end
 
 end
+% Warn user that this will reset any loaded expected coordinates
+if isfield(handles, 'expected_coords') || isfield(handles, 'expected_coords_tolerance')
+
+    button = questdlg({'Warning! Any loaded expected coordinates will be lost.';...
+        'Do you wish to continue?'},'Expected Coordinates Warning','Yes','No','No');
+
+    % user selected cancel...
+    if strcmp(button,'No')
+        return
+    end
+end
+
+if isfield(handles, 'expected_coords')
+    handles = rmfield(handles, 'expected_coords');
+end
+if isfield(handles, 'expected_coords_tolerance')
+    handles = rmfield(handles, 'expected_coords_tolerance');
+end
+handles = remove_expected_coords(handles);
 
 disp(['User selected ', fullfile(pathname, filename)])
 
@@ -1666,14 +1689,14 @@ if ~isdeployed
     [filename,pathname] = ...
         uigetfile({'*.txt;*.dat;*.csv', ...
         'Text Files (*.txt) (*.dat) (*.csv)'} ...
-        ,['Select expected coordinates list file - each measurement point should be'...
-        ' on a new line. Tolerance should have its own line followed by two NaNs.']);
+        ,['Select expected coordinates list file - each location and coordinates should be'...
+        ' on a new line. Tolerance is taken as the X coordinate of the "Tolerance" location.']);
 else
     [filename,pathname] = ...
         uigetfile({'*.txt;*.dat;*.csv', ...
         'Text Files (*.txt) (*.dat) (*.csv)'} ...
-        ,['Select expected coordinates list file - each measurement point should be'...
-        ' on a new line. Tolerance should have its own line followed by two NaNs.'],handles.userDir);
+        ,['Select expected coordinates list file - each location and coordinates should be'...
+        ' on a new line. Tolerance is taken as the X coordinate of the "Tolerance" location.'],handles.userDir);
 end
 % Re-enable the interface objects.
 set(InterfaceObj,'Enable','on');
@@ -1689,17 +1712,52 @@ end
 
 disp(['User selected ', fullfile(pathname, filename)])
 
-expected_coords = load([pathname filename]);
+expected_coords = readtable([pathname filename]);
 
-% Find tolerance - it should be folowed by two NaNs
-[row, col] = find(isnan(expected_coords), 1, 'first');
-if ~length(row) || ~length(col)
-    errordlg('No NaNs found in expected coordinates file! Tolerance was therefore not found!')
+% Check file specification
+if ~strcmp(expected_coords.Properties.VariableNames{1}, 'Location')
+    errordlg('Import Error: First entry in top line of coordinates list file should be "Location" (note capitalisation).', 'Import Error');
     return
 end
-expected_coords_tolerance = expected_coords(row, col-1);
-% remove the nan row
-expected_coords(row, :) = [];
+if ~strcmp(expected_coords.Properties.VariableNames{2}, 'X')
+    errordlg('Import Error: Second entry in top line of coordinates list file should be "X" (note capitalisation).', 'Import Error');
+    return
+end
+if ~strcmp(expected_coords.Properties.VariableNames{3}, 'Y')
+    errordlg('Import Error: Third entry in top line of coordinates list file should be "Y" (note capitalisation).', 'Import Error');
+    return
+end
+if ~strcmp(expected_coords.Properties.VariableNames{4}, 'Z')
+    errordlg('Import Error: Fourth entry in top line of coordinates list file should be "Z" (note capitalisation).', 'Import Error');
+    return
+end
+
+% Find tolerance
+tolrow = find(strcmp(expected_coords.Location, 'Tolerance'));
+if isempty(tolrow)
+    errordlg('Tolerance not found in expected coordinates file! It should be an entry in the "Location" column.', 'Import Error');
+    return
+end
+if length(tolrow) > 1
+    errordlg('Multiple tolerance entries found in expected coordinates file! There should only be one.', 'Import Error');
+    return
+end
+try
+    expected_coords_tolerance = expected_coords.X(tolrow);
+    assert(isnumeric(expected_coords_tolerance));
+    assert(expected_coords_tolerance > 0);
+catch
+    errordlg('Could not get tolerance from expected coordinates file! It should be a nonnegative number in the "X" column next to the "Tolerance" location.', 'Import Error');
+    return
+end
+
+% Delete tolerance from location names
+expected_coords.Properties.RowNames = expected_coords.Location;
+expected_coords.Location = [];
+expected_coords('Tolerance', :) = [];
+
+handles = load_expected_coords(handles, expected_coords);
+
 % save
 handles.expected_coords = expected_coords;
 handles.expected_coords_tolerance = expected_coords_tolerance;
@@ -1715,6 +1773,33 @@ disp(['Saving expected_coords_tolerance to: ', saved_expected_coords_loc]);
 save(saved_expected_coords_loc,'expected_coords','expected_coords_tolerance');
 
 guidata(hObject,handles);
+
+
+function handles = load_expected_coords(handles, expected_coords)
+% Search for expected coordinates names in location names
+data = get(handles.coords_table,'Data');
+[is_match, match_rows] = ismember(expected_coords.Properties.RowNames, data(:, 1));
+if ~all(is_match)
+    errordlg('Not all expected coordinate locations found in currently loaded coordinate locations! Check the expected coordinates file and the list of coordinates.', 'Import Error');
+    return
+end
+
+% Add as new rows to data in new columns
+if size(data, 2) == 1
+    % no data recorded yet
+    data(:, 2:4) = cell(size(data,1), 3);
+end
+data(:, 5:7) = cell(size(data,1), 3);
+data(match_rows, 5:7) = table2cell(expected_coords);
+
+% display new data with new headings
+set(handles.coords_table,'Data', data);
+handles.coords_table.ColumnName(5:7) = {'X exp.', 'Y exp.', 'Z exp.'};
+
+
+function handles = remove_expected_coords(handles)
+handles.coords_table.Data = handles.coords_table.Data(1:4);
+handles.coords_table.ColumnName = handles.coords_table.ColumnName(1:4);
 
 
 % --------------------------------------------------------------------
@@ -1870,7 +1955,7 @@ InsertRowPushbutton_Callback(hObject, eventdata, handles)
 
 
 % --------------------------------------------------------------------
-function menu_file_reset_all_Callback(hObject, eventdata, handles)
+rowmatfunction menu_file_reset_all_Callback(hObject, eventdata, handles)
 % hObject    handle to menu_file_reset_all (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
