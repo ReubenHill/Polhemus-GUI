@@ -69,7 +69,7 @@ function varargout = DIGIGUI(varargin)
 
 % Edit the above text to modify the response to help DIGIGUI
 
-% Last Modified by GUIDE v2.5 23-Jun-2023 15:49:11
+% Last Modified by GUIDE v2.5 26-Jun-2023 12:38:38
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1776,6 +1776,9 @@ guidata(hObject,handles);
 
 
 function handles = load_expected_coords(handles, expected_coords)
+% handles    structure with handles and user data (see GUIDATA)
+% expected_coords loaded expected coordinates table with tolerance removed
+
 % Search for expected coordinates names in location names
 data = get(handles.coords_table,'Data');
 [is_match, match_rows] = ismember(expected_coords.Properties.RowNames, data(:, 1));
@@ -1797,9 +1800,12 @@ set(handles.coords_table,'Data', data);
 handles.coords_table.ColumnName(5:7) = {'X exp.', 'Y exp.', 'Z exp.'};
 
 
+
 function handles = remove_expected_coords(handles)
-handles.coords_table.Data = handles.coords_table.Data(1:4);
+% handles    structure with handles and user data (see GUIDATA)
+handles.coords_table.Data = handles.coords_table.Data(:, 1:4);
 handles.coords_table.ColumnName = handles.coords_table.ColumnName(1:4);
+
 
 
 % --------------------------------------------------------------------
@@ -1974,3 +1980,18 @@ switch choice
     case 'No'
         return;
 end
+
+
+% --------------------------------------------------------------------
+function menu_file_reset_expected_coords_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_file_reset_expected_coords (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if isfield(handles, 'expected_coords')
+    handles = rmfield(handles, 'expected_coords');
+end
+if isfield(handles, 'expected_coords_tolerance')
+    handles = rmfield(handles, 'expected_coords_tolerance');
+end
+handles = remove_expected_coords(handles);
+guidata(hObject,handles);
