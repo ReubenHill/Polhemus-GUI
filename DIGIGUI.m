@@ -709,12 +709,8 @@ end
 if isfield(handles, 'disable_measurements') && handles.disable_measurements
     return
 end
-% Don't measure if we have a double tap warning open or unexpected
-% measurement error open
+% Don't measure if we have a double tap error open
 if isfield(handles, 'doubleTapErrorFigure') && isvalid(handles.doubleTapErrorFigure)
-    return
-end
-if isfield(handles, 'unexpectedMeasurementErrorFigure') && isvalid(handles.unexpectedMeasurementErrorFigure)
     return
 end
 if (...
@@ -841,9 +837,12 @@ if handles.double_tap_error_enabled && handles.point_count > 1
     end
 end
 
-% Remove any open expected measurement figures
+% Remove any open expected or unexpected measurement figures
 if isfield(handles, 'expectedMeasurementFigure') && isvalid(handles.expectedMeasurementFigure)
     close(handles.expectedMeasurementFigure)
+end
+if isfield(handles, 'unexpectedMeasurementWarnFigure') && isvalid(handles.unexpectedMeasurementWarnFigure)
+    close(handles.unexpectedMeasurementWarnFigure)
 end
 % Check against expected coordinates if any are specified
 if isfield(handles, 'expected_coords')
@@ -853,18 +852,10 @@ if isfield(handles, 'expected_coords')
         this_point = data(handles.point_count, 1);
         if distance > handles.expected_coords_tolerance
             msg = sprintf('%s measurement is %0.2g cm from the expected location of (%0.2g, %0.2g, %0.2g) cm!\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, distance, handles.expected_coords(rowmatch, 1).Variables, handles.expected_coords(rowmatch, 2).Variables, handles.expected_coords(rowmatch, 3).Variables, handles.expected_coords_tolerance);
-            handles.unexpectedMeasurementErrorFigure = errordlg(msg, 'Unexpected Measurement!', 'modal');
-            % reset point count, remove data, untick measured, update guidata and exit
-            data(handles.point_count,2:4) = {[], [], []};
-            possible_tick = data(handles.point_count, 8);
-            possible_tick = possible_tick{1};
-            if ~isempty(possible_tick) && possible_tick == true
-                data(handles.point_count, 8) = {false};
-            end
+            handles.unexpectedMeasurementWarnFigure = warndlg(msg, 'Unexpected Measurement!');
+            % untick box...
+            data(handles.point_count, 8) = {false};
             set(handles.coords_table,'Data',data);
-            handles.point_count = previous_point_count;
-            guidata(handles.figure1,handles);
-            return
         else
             msg = sprintf('%s measurement is within tolerance of (%0.2g, %0.2g, %0.2g) cm.\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, handles.expected_coords(rowmatch, 1).Variables, handles.expected_coords(rowmatch, 2).Variables, handles.expected_coords(rowmatch, 3).Variables, handles.expected_coords_tolerance);
             handles.expectedMeasurementFigure = msgbox(msg, 'Expected Measurement Success!', 'custom', handles.checkmark_icon);
