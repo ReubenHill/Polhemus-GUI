@@ -974,7 +974,7 @@ if ~isempty(handles.point_count_history)
     set(handles.infobox,'string', data(handles.point_count+1,1));
 
     % Disable align if now not enough points
-    if(handles.point_count <= size(handles.AtlasLandmarks, 1))
+    if ~all(ismember(1:size(handles.AtlasLandmarks, 1), handles.point_count_history))
         set(handles.HeadAlign,'Enable','off');
     end
 
@@ -1160,23 +1160,30 @@ if(isfield(handles,'selectedRow'))
         % Locations list has now been edited so change bool.
         handles.editedLocationsList = true;
 
-        % check if have deleted any rows where measurements have already
-        % been made
-        if(any(handles.selectedRow <= handles.point_count))
+        % make sure selected rows are in descending order so we can remove
+        % them from the point count history (we decrement as necessary)
+        descendingSelectedRows = sort(handles.selectedRow, 'descend');
 
-            % Remove point from graph...
-            delete(handles.pointhandle(handles.point_count));
-            % and replot axes.
-            axis(handles.coord_plot,'equal');
-
-            % find out how many of the selected rows are less than the
-            % current point_count
-            numToDecrement = nnz(handles.selectedRow <= handles.point_count);
-
-            % decrement point count to account for number of fewer points
-            handles.point_count = handles.point_count - numToDecrement;
-
+        numToDecrement = 0;
+        for i=1:length(descendingSelectedRows)
+            selectedRow = descendingSelectedRows(i);
+            [isin, idx] = ismember(selectedRow, handles.point_count_history);
+            if any(isin)
+                % remove point and decrement point numbers above
+                handles.point_count_history(idx) = [];
+                to_decrement = handles.point_count_history > selectedRow;
+                handles.point_count_history(to_decrement) = handles.point_count_history(to_decrement) - 1;
+                % Remove point from graph
+                delete(handles.pointhandle(selectedRow));
+                % will need to change point count...
+                numToDecrement = numToDecrement + 1;
+            end
         end
+        if numToDecrement > 0
+            % replot axes
+            axis(handles.coord_plot,'equal');
+        end
+        handles.point_count = handles.point_count - numToDecrement;
     end
 else
     % Tell user to select a row before inserting
@@ -1444,6 +1451,9 @@ if(isfield(handles,'selectedRow'))
             if ~isempty(row_x_coord{1})
                 delete(handles.pointhandle(handles.selectedRow(i)));
                 axis(handles.coord_plot,'equal');
+                [isin, idx] = ismember(handles.selectedRow(i), handles.point_count_history);
+                assert(all(isin));
+                handles.point_count_history(idx) = [];
             end
         end
         % delete data on table
@@ -2012,7 +2022,7 @@ InsertRowPushbutton_Callback(hObject, eventdata, handles)
 
 
 % --------------------------------------------------------------------
-rowmatfunction menu_file_reset_all_Callback(hObject, eventdata, handles)
+function menu_file_reset_all_Callback(hObject, eventdata, handles)
 % hObject    handle to menu_file_reset_all (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
