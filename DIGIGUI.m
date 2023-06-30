@@ -447,11 +447,11 @@ if handles.save_expected_coords
         disp(['Looking for expected_coords at: ', saved_expected_coords_loc]);
         disp(['Looking for expected_coords_tolerance at: ', saved_expected_coords_loc]);
         load(saved_expected_coords_loc);
-        handles = load_expected_coords(handles, expected_coords);
+        handles = load_expected_coords(handles, expected_coords, expected_coords_tolerance);
         handles.expected_coords = expected_coords;
         handles.expected_coords_tolerance = expected_coords_tolerance;
     catch
-        uiwait(warndlg('Could load the expected coordinates and tolerance from saved_expected_coords.mat.',...
+        uiwait(warndlg('Could not load the expected coordinates and tolerance from saved_expected_coords.mat.',...
             'Expected Coordinates Warning','modal'));
         if isfield(handles, 'expected_coords')
             handles = rmfield(handles, 'expected_coords');
@@ -818,14 +818,15 @@ if handles.double_tap_error_enabled && handles.point_count > 1
                 % delete row
                 data(handles.point_count, :) = [];
             else
-                % remove data, restore measurement status
+                % remove data, restore measurement status and distance
                 data(handles.point_count,2:4) = {[], [], []};
                 if size(data, 2) > 4 && isfield(handles, 'expected_coords')
                     measurement_status = data(handles.point_count, 8);
                     measurement_status = measurement_status{1};
-                   if ~isempty(measurement_status)
-                       data(handles.point_count, 8) = {'Unmeasured'};
-                   end
+                    if ~isempty(measurement_status)
+                        data(handles.point_count, 8) = {'Unmeasured'};
+                    end
+                    data(handles.point_count, 10) = {[]};
                 end
             end
             set(handles.coords_table,'Data',data);
@@ -855,14 +856,15 @@ if isfield(handles, 'expected_coords')
             handles.unexpectedMeasurementWarnFigure = warndlg(msg, 'Unexpected Measurement!');
             % Set measurement status...
             data(handles.point_count, 8) = {'No'};
-            set(handles.coords_table,'Data',data);
         else
             msg = sprintf('%s measurement is within tolerance of (%0.2g, %0.2g, %0.2g) cm.\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, handles.expected_coords(rowmatch, 1).Variables, handles.expected_coords(rowmatch, 2).Variables, handles.expected_coords(rowmatch, 3).Variables, handles.expected_coords_tolerance);
             handles.expectedMeasurementFigure = msgbox(msg, 'Expected Measurement Success!', 'custom', handles.checkmark_icon);
             % Set measurement status...
             data(handles.point_count, 8) = {'Yes'};
-            set(handles.coords_table,'Data',data);
         end
+        % Display distance
+        data(handles.point_count, 10) = {distance};
+        set(handles.coords_table,'Data',data);
     end
 end
 
@@ -943,11 +945,16 @@ if ~isempty(handles.point_count_history)
     last_point_count = handles.point_count_history(end);
     handles.point_count_history(end) = [];
 
-    % Set the last measured values of x, y and z to be empty cells
-    data{last_point_count,2} = []; % x
-    data{last_point_count,3} = []; % y
-    data{last_point_count,4} = []; % z
-
+    % remove data, restore measurement status and distance
+    data(last_point_count,2:4) = {[], [], []};
+    if size(data, 2) > 4 && isfield(handles, 'expected_coords')
+        measurement_status = data(last_point_count, 8);
+        measurement_status = measurement_status{1};
+        if ~isempty(measurement_status)
+            data(last_point_count, 8) = {'Unmeasured'};
+        end
+        data(last_point_count, 10) = {[]};
+    end
     set(handles.coords_table,'Data',data);
 
     % Remove point from graph...
@@ -1450,7 +1457,7 @@ if(isfield(handles,'selectedRow'))
         % delete data on table
         data(handles.selectedRow,2:4) = cell(length(handles.selectedRow), 3);
         if size(data, 2) > 4
-            % Reset measurement status if we have expected measurements
+            % Reset measurement status and distance if we have expected measurements
             for i = 1:length(handles.selectedRow)
                 selectedRow = handles.selectedRow(i);
                 measurement_status = data(selectedRow, 8);
@@ -1458,6 +1465,7 @@ if(isfield(handles,'selectedRow'))
                 if ~isempty(measurement_status)
                     data(selectedRow, 8) = {'Unmeasured'};
                 end
+                data(selectedRow, 10) = {[]};
             end
         end
         set(handles.coords_table,'Data',data);
@@ -1802,7 +1810,7 @@ expected_coords.Properties.RowNames = expected_coords.Location;
 expected_coords.Location = [];
 expected_coords('Tolerance', :) = [];
 
-handles = load_expected_coords(handles, expected_coords);
+handles = load_expected_coords(handles, expected_coords, expected_coords_tolerance);
 
 % save
 handles.expected_coords = expected_coords;
@@ -1821,7 +1829,7 @@ save(saved_expected_coords_loc,'expected_coords','expected_coords_tolerance');
 guidata(hObject,handles);
 
 
-function handles = load_expected_coords(handles, expected_coords)
+function handles = load_expected_coords(handles, expected_coords, expected_coords_tolerance)
 % handles    structure with handles and user data (see GUIDATA)
 % expected_coords loaded expected coordinates table with tolerance removed
 
@@ -1847,11 +1855,18 @@ data(match_rows, 5:7) = table2cell(expected_coords);
 data(:, 8) = cell(size(data,1), 1);
 data(match_rows, 8) = {'Unmeasured'};
 
+% Display tolerance
+data(match_rows, 9) = {expected_coords_tolerance};
+
+% Clear any already displayed distance
+data(match_rows, 10) = {[]};
+
 % display new data with new headings
 set(handles.coords_table,'Data', data);
-handles.coords_table.ColumnName(5:8) = {'X exp.', 'Y exp.', 'Z exp.', 'In tolerance?'};
+handles.coords_table.ColumnName(5:10) = {'X expected', 'Y expected', 'Z expected', 'As expected?', 'Tolerance', 'Distance'};
 handles.coords_table.ColumnWidth(5:7) = handles.coords_table.ColumnWidth(4);
 handles.coords_table.ColumnWidth(8) = {'auto'};
+handles.coords_table.ColumnWidth(9:10) = handles.coords_table.ColumnWidth(4);
 
 
 
