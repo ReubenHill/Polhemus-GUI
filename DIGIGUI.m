@@ -1052,10 +1052,9 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
     if(filterIndex == 2)
         disp(['Data saving to ' pathName fileName]);
         dataOutput = get(handles.coords_table,'Data');
-        % remove any expected coordinates information
-        dataOutput = dataOutput(:, 1:4);
-        save([pathName fileName],'dataOutput');
-        disp('Data is stored in cell array "dataOutput"');
+        dataOutputHeadings = handles.coords_table.ColumnName;
+        save([pathName fileName],'dataOutput', 'dataOutputHeadings');
+        disp('Data is stored in cell array "dataOutput" with headings in "dataOutputHeadings"');
 
     % Otherwise create a table from the cell array and output that to file.
     else
@@ -1079,9 +1078,8 @@ if(filterIndex ~= 0) % if == 0 then user selected "cancel" in "Save As"
             %Mark empty location names as '-'
             data(emptyLocationNames,1) = {'-'};
 
-            % remove any expected coordinates information
-            data = data(:, 1:4);
-            columnnames = handles.coords_table.ColumnName(1:4);
+            % replace spaces with underscores in column names
+            columnnames = regexprep(handles.coords_table.ColumnName, ' +', '_');
 
             tableToOutput = cell2table(data,'VariableNames', columnnames);
             % Note that writetable changes its output depending on the fileName
@@ -1863,7 +1861,7 @@ data(match_rows, 10) = {[]};
 
 % display new data with new headings
 set(handles.coords_table,'Data', data);
-handles.coords_table.ColumnName(5:10) = {'X expected', 'Y expected', 'Z expected', 'As expected?', 'Tolerance', 'Distance'};
+handles.coords_table.ColumnName(5:10) = {'X expected', 'Y expected', 'Z expected', 'Is expected', 'Tolerance', 'Distance'};
 handles.coords_table.ColumnWidth(5:7) = handles.coords_table.ColumnWidth(4);
 handles.coords_table.ColumnWidth(8) = {'auto'};
 handles.coords_table.ColumnWidth(9:10) = handles.coords_table.ColumnWidth(4);
