@@ -1836,7 +1836,9 @@ function handles = load_expected_coords(handles, expected_coords)
 
 % Search for expected coordinates names in location names
 data = get(handles.coords_table,'Data');
-[is_match, match_rows] = ismember(expected_coords.Properties.RowNames, data(:, 1));
+locations = data(:, 1);
+locations_with_names = locations(~cellfun('isempty',locations));
+[is_match, match_rows] = ismember(expected_coords.Properties.RowNames, locations_with_names);
 if ~all(is_match)
     errordlg('Not all expected coordinate locations found in currently loaded coordinate locations! Check the expected coordinates file and the list of coordinates.', 'Import Error');
     return
