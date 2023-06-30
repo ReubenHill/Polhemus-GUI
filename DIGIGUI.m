@@ -818,13 +818,13 @@ if handles.double_tap_error_enabled && handles.point_count > 1
                 % delete row
                 data(handles.point_count, :) = [];
             else
-                % remove data, untick measured
+                % remove data, restore measurement status
                 data(handles.point_count,2:4) = {[], [], []};
                 if size(data, 2) > 4 && isfield(handles, 'expected_coords')
-                    possible_tick = data(handles.point_count, 8);
-                    possible_tick = possible_tick{1};
-                   if ~isempty(possible_tick) && possible_tick == true
-                       data(handles.point_count, 8) = {false};
+                    measurement_status = data(handles.point_count, 8);
+                    measurement_status = measurement_status{1};
+                   if ~isempty(measurement_status)
+                       data(handles.point_count, 8) = {'Unmeasured'};
                    end
                 end
             end
@@ -853,14 +853,14 @@ if isfield(handles, 'expected_coords')
         if distance > handles.expected_coords_tolerance
             msg = sprintf('%s measurement is %0.2g cm from the expected location of (%0.2g, %0.2g, %0.2g) cm!\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, distance, handles.expected_coords(rowmatch, 1).Variables, handles.expected_coords(rowmatch, 2).Variables, handles.expected_coords(rowmatch, 3).Variables, handles.expected_coords_tolerance);
             handles.unexpectedMeasurementWarnFigure = warndlg(msg, 'Unexpected Measurement!');
-            % untick box...
-            data(handles.point_count, 8) = {false};
+            % Set measurement status...
+            data(handles.point_count, 8) = {'No'};
             set(handles.coords_table,'Data',data);
         else
             msg = sprintf('%s measurement is within tolerance of (%0.2g, %0.2g, %0.2g) cm.\nCurrent tolerance is %0.2g cm. Tolerance is set in the expected coordinates file.', this_point{1}, handles.expected_coords(rowmatch, 1).Variables, handles.expected_coords(rowmatch, 2).Variables, handles.expected_coords(rowmatch, 3).Variables, handles.expected_coords_tolerance);
             handles.expectedMeasurementFigure = msgbox(msg, 'Expected Measurement Success!', 'custom', handles.checkmark_icon);
-            % tick box...
-            data(handles.point_count, 8) = {true};
+            % Set measurement status...
+            data(handles.point_count, 8) = {'Yes'};
             set(handles.coords_table,'Data',data);
         end
     end
@@ -1450,13 +1450,13 @@ if(isfield(handles,'selectedRow'))
         % delete data on table
         data(handles.selectedRow,2:4) = cell(length(handles.selectedRow), 3);
         if size(data, 2) > 4
-            % untick any boxes if we have expected measurements too
+            % Reset measurement status if we have expected measurements
             for i = 1:length(handles.selectedRow)
                 selectedRow = handles.selectedRow(i);
-                possible_tick = data(selectedRow,8);
-                possible_tick = possible_tick{1};
-                if ~isempty(possible_tick) && possible_tick == true
-                    data(selectedRow,8) = num2cell(false);
+                measurement_status = data(selectedRow, 8);
+                measurement_status = measurement_status{1};
+                if ~isempty(measurement_status)
+                    data(selectedRow, 8) = {'Unmeasured'};
                 end
             end
         end
@@ -1843,13 +1843,15 @@ end
 data(:, 5:7) = cell(size(data,1), 3);
 data(match_rows, 5:7) = table2cell(expected_coords);
 
-% Add unticked tick boxes too
+% Add measurement status too
 data(:, 8) = cell(size(data,1), 1);
-data(match_rows, 8) = num2cell(false(size(expected_coords, 1), 1));
+data(match_rows, 8) = {'Unmeasured'};
 
 % display new data with new headings
 set(handles.coords_table,'Data', data);
-handles.coords_table.ColumnName(5:8) = {'X exp.', 'Y exp.', 'Z exp.', 'Measured'};
+handles.coords_table.ColumnName(5:8) = {'X exp.', 'Y exp.', 'Z exp.', 'In tolerance?'};
+handles.coords_table.ColumnWidth(5:7) = handles.coords_table.ColumnWidth(4);
+handles.coords_table.ColumnWidth(8) = {'auto'};
 
 
 
