@@ -711,7 +711,7 @@ if isfield(handles, 'disable_measurements') && handles.disable_measurements
 end
 % Don't measure if we have a double tap warning open or unexpected
 % measurement error open
-if isfield(handles, 'doubleTapWarnFigure') && isvalid(handles.doubleTapWarnFigure)
+if isfield(handles, 'doubleTapErrorFigure') && isvalid(handles.doubleTapErrorFigure)
     return
 end
 if isfield(handles, 'unexpectedMeasurementErrorFigure') && isvalid(handles.unexpectedMeasurementErrorFigure)
@@ -789,6 +789,7 @@ if isfield(handles, 'headplot')
     Coords = Coords*handles.TransformMatrix';
 end
 
+location_list_expanded = false;
 % Check if table is currently full - if it is then adding a new point
 % will expand the table...
 if(handles.point_count > size(data,1))
@@ -796,6 +797,7 @@ if(handles.point_count > size(data,1))
     % edited. When the user saves their data they will therefore be
     % prompted to save the locations list too.
     handles.editedLocationsList = true;
+    location_list_expanded = true;
 end
 
 % Update table with newly measured x y and z values
@@ -816,10 +818,22 @@ if handles.double_tap_error_enabled && handles.point_count > 1
             this_point = data(handles.point_count, 1);
             msg = sprintf('%s measurement was only %0.2g cm from %s measurement!\nCurrent error distance is %0.2g cm. This can be changed or disabled in the options.', this_point{1}, distance, last_point{1}, handles.error_distance);
             handles.doubleTapErrorFigure = errordlg(msg, 'Double tap error', 'modal');
-            % reset point count, remove data, untick measured, update guidata and exit
-            data(handles.point_count,2:4) = {[], [], []};
-            data(handles.point_count, 8) = {false};
+            if location_list_expanded
+                % delete row
+                data(handles.point_count, :) = [];
+            else
+                % remove data, untick measured
+                data(handles.point_count,2:4) = {[], [], []};
+                if size(data, 2) > 4 && isfield(handles, 'expected_coords')
+                    possible_tick = data(handles.point_count, 8);
+                    possible_tick = possible_tick{1};
+                   if ~isempty(possible_tick) && possible_tick == true
+                       data(handles.point_count, 8) = {false};
+                   end
+                end
+            end
             set(handles.coords_table,'Data',data);
+            % reset point count, update guidata and exit
             handles.point_count = previous_point_count;
             guidata(handles.figure1,handles);
             return
@@ -842,7 +856,11 @@ if isfield(handles, 'expected_coords')
             handles.unexpectedMeasurementErrorFigure = errordlg(msg, 'Unexpected Measurement!', 'modal');
             % reset point count, remove data, untick measured, update guidata and exit
             data(handles.point_count,2:4) = {[], [], []};
-            data(handles.point_count, 8) = {false};
+            possible_tick = data(handles.point_count, 8);
+            possible_tick = possible_tick{1};
+            if ~isempty(possible_tick) && possible_tick == true
+                data(handles.point_count, 8) = {false};
+            end
             set(handles.coords_table,'Data',data);
             handles.point_count = previous_point_count;
             guidata(handles.figure1,handles);
@@ -1432,7 +1450,14 @@ if(isfield(handles,'selectedRow'))
         data(handles.selectedRow,2:4) = cell(length(handles.selectedRow), 3);
         if size(data, 2) > 4
             % untick any boxes if we have expected measurements too
-            data(handles.selectedRow,8) = num2cell(false(length(handles.selectedRow), 1));
+            for i = 1:length(handles.selectedRow)
+                selectedRow = handles.selectedRow(i);
+                possible_tick = data(selectedRow,8);
+                possible_tick = possible_tick{1};
+                if ~isempty(possible_tick) && possible_tick == true
+                    data(selectedRow,8) = num2cell(false);
+                end
+            end
         end
         set(handles.coords_table,'Data',data);
     end
