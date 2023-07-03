@@ -13,7 +13,7 @@
     <param.email>reuben.w.hill@gmail.com</param.email>
     <param.company />
     <param.summary>A graphical user interface for use with the Polhemus Patriot Digitiser at a baud rate of 115200.</param.summary>
-    <param.description>Version 1.3.0-beta2.
+    <param.description>Version 1.3.0-gamma.
 Copyright © 2023 Reuben Nixon-Hill, MATLAB® © 1984 - 2016 The MathWorks, Inc.
 This package is licenced under the MIT Licence (see LICENCE.txt) and was created using MATLAB® compiler.</param.description>
     <param.screenshot />
