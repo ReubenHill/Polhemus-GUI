@@ -75,7 +75,7 @@ function varargout = DIGIGUI(varargin)
 
 % Edit the above text to modify the response to help DIGIGUI
 
-% Last Modified by GUIDE v2.5 26-Jun-2023 13:46:04
+% Last Modified by GUIDE v2.5 03-Jul-2023 13:24:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -248,16 +248,21 @@ try
         settings_loc = fullfile(ctfroot, 'DIGIGUI', 'settings.mat');
     end
     disp(['looking for settings.mat at ', settings_loc]);
-    load(settings_loc,'error_distance','double_tap_error_enabled','atlas_dir','save_expected_coords', 'only_measure_with_expected_coords');
+    load(settings_loc,'error_distance','double_tap_error_enabled','atlas_dir','save_expected_coords', 'only_measure_with_expected_coords', 'prepopulate_rows_checked', 'previousStartNumber', 'previousEndNumber', 'previousStartLetter', 'previousEndLetter');
     disp(['error_distance: ', num2str(error_distance)]);
     disp(['double_tap_error_enabled: ', num2str(double_tap_error_enabled)]);
     disp(['atlas_dir: ', atlas_dir]);
     disp(['save_expected_coords: ', num2str(save_expected_coords)]);
     disp(['only_measure_with_expected_coords: ', num2str(only_measure_with_expected_coords)]);
+    disp(['prepopulate_rows_checked: ', prepopulate_rows_checked]);
+    disp(['previousStartNumber: ', previousStartNumber]);
+    disp(['previousEndNumber: ', previousEndNumber]);
+    disp(['previousStartLetter: ', previousStartLetter]);
+    disp(['previousEndLetter: ', previousEndLetter]);
 catch
     uiwait(errordlg('Settings missing or not found, falling back on default settings.','Settings Error'));
     try
-        load('default_settings.mat','error_distance','double_tap_error_enabled','atlas_dir','save_expected_coords','only_measure_with_expected_coords');
+        load('default_settings.mat','error_distance','double_tap_error_enabled','atlas_dir','save_expected_coords','only_measure_with_expected_coords', 'prepopulate_rows_checked', 'previousStartNumber', 'previousEndNumber', 'previousStartLetter', 'previousEndLetter');
         disp(['error_distance: ', num2str(error_distance)]);
         disp(['double_tap_error_enabled: ', num2str(double_tap_error_enabled)]);
         if ~isdeployed
@@ -268,6 +273,11 @@ catch
         disp(['atlas_dir: ', atlas_dir]);
         disp(['save_expected_coords: ', num2str(save_expected_coords)]);
         disp(['only_measure_with_expected_coords: ', num2str(only_measure_with_expected_coords)]);
+        disp(['prepopulate_rows_checked: ', prepopulate_rows_checked]);
+        disp(['previousStartNumber: ', previousStartNumber]);
+        disp(['previousEndNumber: ', previousEndNumber]);
+        disp(['previousStartLetter: ', previousStartLetter]);
+        disp(['previousEndLetter: ', previousEndLetter]);
     catch
         uiwait(errordlg('Default settings missing or not found! Quitting.','Settings Error'));
         %Quit the gui
@@ -281,6 +291,11 @@ handles.error_distance = error_distance;
 handles.double_tap_error_enabled = double_tap_error_enabled;
 handles.save_expected_coords = save_expected_coords;
 handles.only_measure_with_expected_coords = only_measure_with_expected_coords;
+handles.menu_options_location_prepopulation.Checked = prepopulate_rows_checked;
+handles.previousStartNumber = previousStartNumber;
+handles.previousEndNumber = previousEndNumber;
+handles.previousStartLetter = previousStartLetter;
+handles.previousEndLetter = previousEndLetter;
 
 %Import atlas
 noatlas = true;
@@ -660,6 +675,29 @@ if isfield(handles, 'only_measure_with_expected_coords')
     disp(['Saving only_measure_with_expected_coords to ', settings_loc]);
     only_measure_with_expected_coords = handles.only_measure_with_expected_coords;
     save(settings_loc, 'only_measure_with_expected_coords', '-append');
+end
+disp(['Saving prepopulate_rows_checked to ', settings_loc]);
+prepopulate_rows_checked = handles.menu_options_location_prepopulation.Checked;
+save(settings_loc, 'prepopulate_rows_checked', '-append');
+if isfield(handles, 'previousStartNumber')
+    disp(['Saving previousStartNumber to ', settings_loc]);
+    previousStartNumber = handles.previousStartNumber;
+    save(settings_loc, 'previousStartNumber', '-append');
+end
+if isfield(handles, 'previousEndNumber')
+    disp(['Saving previousEndNumber to ', settings_loc]);
+    previousEndNumber = handles.previousEndNumber;
+    save(settings_loc, 'previousEndNumber', '-append');
+end
+if isfield(handles, 'previousStartLetter')
+    disp(['Saving previousStartLetter to ', settings_loc]);
+    previousStartLetter = handles.previousStartLetter;
+    save(settings_loc, 'previousStartLetter', '-append');
+end
+if isfield(handles, 'previousEndLetter')
+    disp(['Saving previousEndLetter to ', settings_loc]);
+    previousEndLetter = handles.previousEndLetter;
+    save(settings_loc, 'previousEndLetter', '-append');
 end
 
 
@@ -1956,6 +1994,13 @@ end
 answer = inputdlg(prompt,dlg_title,num_lines,defaultans);
 if isempty(answer)
     % cancel selected
+
+    % Re-enable the interface objects.
+    set(InterfaceObj,'Enable','on');
+
+    % re-enable measurements
+    handles.disable_measurements = false;
+    guidata(hObject,handles);
     return
 end
 try
@@ -1967,7 +2012,149 @@ catch
     errordlg('Number of rows to insert must be a positive integer.', 'Error', 'modal');
     return
 end
-insert_rows_below(hObject, eventdata, handles, nrows);
+
+if strcmp(handles.menu_options_location_prepopulation.Checked, 'on')
+    % Open pre-populate rows dialogue
+    valid_entries = false;
+    while ~valid_entries
+        prompt = {'Start number (leave blank to not use):', 'End number (leave blank to not use):', 'Start letter (leave blank to not use):', 'End letter (leave blank to not use):'};
+        dlg_title = 'Location Prepopulation Options...';
+        num_lines = 1;
+        defaultans = {'', '', '', ''};
+        if isfield(handles,'previousStartNumber')
+            defaultans{1} = num2str(handles.previousStartNumber);
+        end
+        if isfield(handles,'previousEndNumber')
+            defaultans{2} = num2str(handles.previousEndNumber);
+        end
+        if isfield(handles,'previousStartLetter')
+            defaultans{3} = num2str(handles.previousStartLetter);
+        end
+        if isfield(handles,'previousEndLetter')
+            defaultans{4} = num2str(handles.previousEndLetter);
+        end
+        answer = inputdlg(prompt,dlg_title,num_lines,defaultans);
+        if isempty(answer)
+            % cancel selected - don't save handles, just return
+
+            % Re-enable the interface objects.
+            set(InterfaceObj,'Enable','on');
+
+            % re-enable measurements
+            handles.disable_measurements = false;
+
+            return
+        end
+        try
+            start_number = str2num(answer{1});
+            if ~isempty(answer{1})
+                assert(~isempty(start_number));
+            end
+            if ~isempty(start_number)
+                assert(floor(start_number) == start_number);
+            end
+            handles.previousStartNumber = start_number;
+        catch
+            h = errordlg('Start number must be an integer!', 'Error', 'modal');
+            uiwait(h)
+            continue
+        end
+        try
+            end_number = str2num(answer{2});
+            if ~isempty(answer{2})
+                assert(~isempty(end_number));
+            end
+            if ~isempty(end_number)
+                assert(floor(end_number) == end_number);
+            end
+            handles.previousEndNumber = end_number;
+        catch
+            h = errordlg('End number must be an integer!', 'Error', 'modal');
+            uiwait(h)
+            continue
+        end
+        if isempty(start_number) && ~isempty(end_number)
+            h = errordlg('If start number is unspecified, end number must also be unspecified.', 'Error', 'modal');
+            uiwait(h)
+            continue
+        end
+        if ~isempty(start_number) && isempty(end_number)
+            h = errordlg('If start number is specified, end number must also be specified.', 'Error', 'modal');
+            uiwait(h)
+            continue
+        end
+        if end_number < start_number
+            h = errordlg('End number must be greater than or equal to the start number!', 'Error', 'modal');
+            uiwait(h)
+            continue
+        end
+        try
+            start_letter = char(answer{3});
+            assert(length(start_letter) < 2);
+            handles.previousStartLetter = start_letter;
+        catch
+            h = errordlg('Only one start letter can be specified.', 'Error', 'modal');
+            uiwait(h)
+            continue
+        end
+        try
+            end_letter = char(answer{4});
+            assert(length(end_letter) < 2);
+            handles.previousEndLetter = end_letter;
+        catch
+            errordlg('Only one end letter can be specified.', 'Error', 'modal');
+            continue
+        end
+        if isempty(start_number) && ~isempty(end_number)
+            h = errordlg('If start letter is unspecified, end letter must also be unspecified.', 'Error', 'modal');
+            uiwait(h)
+            continue
+        end
+        if ~isempty(start_number) && isempty(end_number)
+            h = errordlg('If start letter is specified, end letter must also be specified.', 'Error', 'modal');
+            uiwait(h)
+            continue
+        end
+        if end_letter < start_letter
+            h = errordlg('End letter must be after or the same as the start letter!', 'Error', 'modal');
+            uiwait(h)
+            continue
+        end
+        valid_entries = true;
+    end
+end
+
+error = insert_rows_below(hObject, eventdata, handles, nrows);
+
+if strcmp(handles.menu_options_location_prepopulation.Checked, 'on')
+    % Fill in names
+    if ~error
+        assert(isfield(handles,'selectedRow'))
+        data = get(handles.coords_table,'Data');
+        start_row = handles.selectedRow(end) + 1;
+        end_row = start_row + nrows - 1;
+        current_number = start_number;
+        current_letter = start_letter;
+        for i = start_row:end_row
+            % loop through letters, then through numbers
+            name = strcat(num2str(current_number), current_letter);
+            reset_letter = current_letter >= end_letter;
+            if ~isempty(reset_letter) && reset_letter
+                current_letter = start_letter;
+                reset_number = current_number >= end_number;
+                if ~isempty(reset_number) && reset_number
+                    current_number = start_number;
+                else
+                    current_number = current_number + 1;
+                end
+            else
+                current_letter = char(current_letter + 1);
+            end
+            data{i,1} = name;
+        end
+        set(handles.coords_table,'Data', data)
+    end
+end
 
 % Re-enable the interface objects.
 set(InterfaceObj,'Enable','on');
@@ -1977,7 +2164,9 @@ handles.disable_measurements = false;
 guidata(hObject,handles);
 
 
-function insert_rows_below(hObject, eventdata, handles, nrows)
+function error = insert_rows_below(hObject, eventdata, handles, nrows)
+
+error = false;
 
 data = get(handles.coords_table,'Data');
 
@@ -1987,6 +2176,8 @@ data = get(handles.coords_table,'Data');
 if(isfield(handles,'selectedRow'))
     if(handles.selectedRow(end) < size(handles.AtlasLandmarks, 1))
         errordlg('Cannot insert or delete Atlas Points','Error','modal');
+        error = true;
+        return
     else
         row = handles.selectedRow(end);
         % insert new rows
@@ -2009,6 +2200,8 @@ else
 
     % Tell user to select a row before inserting
     errordlg('Please select a row to insert below.','Insert Error','modal');
+    error = true;
+    return
 end
 % save the newly changed data to the table on the gui
 set(handles.coords_table,'Data',data);
@@ -2080,4 +2273,18 @@ if isfield(handles, 'expected_coords_tolerance')
     handles = rmfield(handles, 'expected_coords_tolerance');
 end
 handles = remove_expected_coords(handles);
+guidata(hObject,handles);
+
+
+% --------------------------------------------------------------------
+function menu_options_location_prepopulation_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_options_location_prepopulation (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% disable measurements
+if strcmp(handles.menu_options_location_prepopulation.Checked, 'on')
+    handles.menu_options_location_prepopulation.Checked = 'off';
+else
+    handles.menu_options_location_prepopulation.Checked = 'on';
+end
 guidata(hObject,handles);
