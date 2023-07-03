@@ -706,23 +706,26 @@ if isfield(handles, 'previousEndLetter')
 end
 
 
-function save_locations_if_edited(handles)
+function save_locations(handles)
 
 if handles.editedLocationsList
     choice = questdlg('The locations list has been edited. Do you want to save it loading next time or reset it to the list that was imported when this session was started?', ...
         'Locations List Edited', ...
         'Save Locations List','Reset Locations List','Reset Locations List');
-    if strcmp(choice, 'Save Locations List')
-        % Save locations variable to be loaded next time
-        if ~isdeployed
-            saved_location_names_loc = fullfile(pwd,'savedLocationNames.mat');
-        else
-            saved_location_names_loc = fullfile(ctfroot, 'DIGIGUI', 'savedLocationNames.mat');
-        end
-        locations = handles.coords_table.Data(:, 1);
-        disp(['Saving locations to: ', saved_location_names_loc]);
-        save(saved_location_names_loc,'locations');
+else
+    % just in case, we've missed an edit somewhere we'll save it anyway!
+    choice = 'Save Locations List';
+end
+if strcmp(choice, 'Save Locations List')
+    % Save locations variable to be loaded next time
+    if ~isdeployed
+        saved_location_names_loc = fullfile(pwd,'savedLocationNames.mat');
+    else
+        saved_location_names_loc = fullfile(ctfroot, 'DIGIGUI', 'savedLocationNames.mat');
     end
+    locations = handles.coords_table.Data(:, 1);
+    disp(['Saving locations to: ', saved_location_names_loc]);
+    save(saved_location_names_loc,'locations');
 end
 
 
@@ -751,7 +754,7 @@ catch
 end
 
 save_settings(handles);
-save_locations_if_edited(handles);
+save_locations(handles);
 close_serial_port(handles);
 
 delete(gcf);
@@ -2287,7 +2290,7 @@ switch choice
         % and replot axes.
         axis(handles.coord_plot,'equal');
         save_settings(handles);
-        save_locations_if_edited(handles);
+        save_locations(handles);
         handles = close_serial_port(handles);
         DIGIGUI_OutputFcn(hObject, eventdata, handles);
     case 'No'
