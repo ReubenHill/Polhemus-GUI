@@ -1935,6 +1935,16 @@ function pushbutton_insert_rows_below_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_insert_rows_below (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% disable measurements
+handles.disable_measurements = true;
+guidata(hObject,handles);
+
+% Find interface objects that are set to 'on' i.e. enabled...
+InterfaceObj=findobj(handles.figure1,'Enable','on');
+% ... and turn them off.
+set(InterfaceObj,'Enable','off');
+
 prompt = {'Number of rows:'};
 dlg_title = 'Insert Rows Below...';
 num_lines = 1;
@@ -1958,6 +1968,13 @@ catch
     return
 end
 insert_rows_below(hObject, eventdata, handles, nrows);
+
+% Re-enable the interface objects.
+set(InterfaceObj,'Enable','on');
+
+% re-enable measurements
+handles.disable_measurements = false;
+guidata(hObject,handles);
 
 
 function insert_rows_below(hObject, eventdata, handles, nrows)
