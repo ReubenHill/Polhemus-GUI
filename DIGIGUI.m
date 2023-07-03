@@ -706,21 +706,23 @@ if isfield(handles, 'previousEndLetter')
 end
 
 
-function save_locations(handles)
+function save_locations_if_edited(handles)
 
-choice = questdlg('Do you want to save the locations list for loading next time or reset the list to what was first imported upon starting this session?', ...
-    'Locations List', ...
-    'Save Locations List','Reset Locations List','Reset Locations List');
-if strcmp(choice, 'Save Locations List')
-    % Save locations variable to be loaded next time
-    if ~isdeployed
-        saved_location_names_loc = fullfile(pwd,'savedLocationNames.mat');
-    else
-        saved_location_names_loc = fullfile(ctfroot, 'DIGIGUI', 'savedLocationNames.mat');
+if handles.editedLocationsList
+    choice = questdlg('The locations list has been edited. Do you want to save it loading next time or reset it to the list that was imported when this session was started?', ...
+        'Locations List Edited', ...
+        'Save Locations List','Reset Locations List','Reset Locations List');
+    if strcmp(choice, 'Save Locations List')
+        % Save locations variable to be loaded next time
+        if ~isdeployed
+            saved_location_names_loc = fullfile(pwd,'savedLocationNames.mat');
+        else
+            saved_location_names_loc = fullfile(ctfroot, 'DIGIGUI', 'savedLocationNames.mat');
+        end
+        locations = handles.coords_table.Data(:, 1);
+        disp(['Saving locations to: ', saved_location_names_loc]);
+        save(saved_location_names_loc,'locations');
     end
-    locations = handles.coords_table.Data(:, 1);
-    disp(['Saving locations to: ', saved_location_names_loc]);
-    save(saved_location_names_loc,'locations');
 end
 
 
@@ -749,7 +751,7 @@ catch
 end
 
 save_settings(handles);
-save_locations(handles);
+save_locations_if_edited(handles);
 close_serial_port(handles);
 
 delete(gcf);
@@ -1363,10 +1365,8 @@ cla(handles.coord_plot);
 % and replot axes.
 axis(handles.coord_plot,'equal');
 
-% Locations list is now unedited (since it's just been imported) so reset
-% both bools that deal with whether bits of the location list are edited.
-handles.editedLocationsList = false;
-handles.editedAtlasPoints = false;
+handles.editedLocationsList = true;
+handles.editedAtlasPoints = true;
 
 guidata(hObject,handles);
 
@@ -2287,7 +2287,7 @@ switch choice
         % and replot axes.
         axis(handles.coord_plot,'equal');
         save_settings(handles);
-        save_locations(handles);
+        save_locations_if_edited(handles);
         handles = close_serial_port(handles);
         DIGIGUI_OutputFcn(hObject, eventdata, handles);
     case 'No'
