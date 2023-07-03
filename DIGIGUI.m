@@ -2017,7 +2017,13 @@ if strcmp(handles.menu_options_insert_by_number.Checked, 'on')
         assert(floor(nrows) == nrows);
         handles.previousInsertRowsVal = nrows;
     catch
-        errordlg('Number of rows to insert must be a positive integer.', 'Error', 'modal');
+        h = errordlg('Number of rows to insert must be a positive integer.', 'Error', 'modal');
+        uiwait(h)
+        % Re-enable the interface objects.
+        set(InterfaceObj,'Enable','on');
+        % re-enable measurements
+        handles.disable_measurements = false;
+        guidata(hObject,handles);
         return
     end
 else
@@ -2141,7 +2147,18 @@ else
     end
 end
 
-error = insert_rows_below(hObject, eventdata, handles, nrows);
+if isempty(nrows)
+    h = warndlg('No rows have been specified!', 'Insert Rows Below...');
+    uiwait(h)
+    % Re-enable the interface objects.
+    set(InterfaceObj,'Enable','on');
+    % re-enable measurements
+    handles.disable_measurements = false;
+    guidata(hObject,handles);
+    return
+end
+
+[error, handles] = insert_rows_below(hObject, eventdata, handles, nrows);
 
 if strcmp(handles.menu_options_insert_by_location_name.Checked, 'on') && ~error
     assert(strcmp(handles.menu_options_insert_by_number.Checked, 'off'))
@@ -2180,7 +2197,7 @@ handles.disable_measurements = false;
 guidata(hObject,handles);
 
 
-function error = insert_rows_below(hObject, eventdata, handles, nrows)
+function [error, handles] = insert_rows_below(hObject, eventdata, handles, nrows)
 
 error = false;
 
