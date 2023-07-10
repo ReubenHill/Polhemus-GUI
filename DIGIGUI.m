@@ -709,14 +709,14 @@ end
 function save_locations(handles)
 
 if handles.editedLocationsList
-    choice = questdlg('The locations list has been edited. Do you want to save it loading next time or reset it to the list that was imported when this session was started?', ...
+    choice = questdlg('The locations list has been edited. Do you want to save it for loading next time or forget it? If you choose to forget it, the last saved locations list will be used when DIGIGUI is next loaded.', ...
         'Locations List Edited', ...
-        'Save Locations List','Reset Locations List','Reset Locations List');
+        'Save Locations List','Forget Locations List','Forget Locations List');
 else
     % just in case, we've missed an edit somewhere we'll save it anyway!
-    choice = 'Save Locations List';
+    choice = 'Forget Locations List';
 end
-if strcmp(choice, 'Save Locations List')
+if strcmp(choice, 'Forget Locations List')
     % Save locations variable to be loaded next time
     if ~isdeployed
         saved_location_names_loc = fullfile(pwd,'savedLocationNames.mat');
