@@ -1391,7 +1391,7 @@ InterfaceObj=findobj(handles.figure1,'Enable','on');
 set(InterfaceObj,'Enable','off');
 
 % Check that user is happy to continue
-button = questdlg('Warning! This only exports location names. To save location coordinates use "Save As...". Do you wish to continue?' ...
+button = questdlg('Warning! This only exports location names (excluding atlas location names). To save all data, including all coordinates and atlas location names, use "Save Data As...". Do you wish to continue?' ...
     ,'Export Warning','Yes','No','No');
 if strcmp(button, 'No')
     % Re-enable the interface objects.
